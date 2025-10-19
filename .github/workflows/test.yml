@@ -1,0 +1,109 @@
+name: Test Action
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.3"
+          cache: true
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run tests
+        run: |
+          go test -v -race -coverprofile=coverage.out -covermode=count ./...
+          grep -v "main.go" coverage.out > coverage.out
+
+      - name: Generate coverage report
+        run: go tool cover -func=coverage.out
+
+      - name: Check coverage threshold
+        run: |
+          coverage=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          echo "Total coverage: ${coverage}%"
+          if (( $(echo "$coverage < 90" | bc -l) )); then
+            echo "Coverage is below 90%"
+            exit 1
+          fi
+
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.3"
+          cache: true
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          args: --timeout=5m
+
+  test-action:
+    name: Test Action Execution
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.3"
+          cache: true
+
+      - name: Build action
+        run: go build -o release-aur .
+
+      - name: Test action with sample data
+        env:
+          cli_name: pkgmate
+          maintainers: "Fuad Daoud <aur@fuad-daoud.com>"
+          pkgname: pkgmate-bin
+          version: 0.1.1
+          description: "TUI application to manage your dependencies"
+          url: "https://github.com/fuad-daoud/pkgmate"
+          arch: "x86_64"
+          licence: "MIT"
+          source_x86_64: "pkgmate-bin-0.1.1-x86_64::https://github.com/fuad-daoud/pkgmate/releases/download/0.1.1/pkgmate-linux-amd64"
+        run: ./release-aur
+
+      - name: Verify PKGBUILD generated
+        run: |
+          if [ ! -f output/PKGBUILD ]; then
+            echo "PKGBUILD file not generated"
+            exit 1
+          fi
+          echo "PKGBUILD generated successfully"
+          cat output/PKGBUILD
+
+      - name: Upload PKGBUILD artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pkgbuild
+          path: output/PKGBUILD
+          retention-days: 7
