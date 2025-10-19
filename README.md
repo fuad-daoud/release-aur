@@ -1,5 +1,9 @@
 # Release to AUR GitHub Action
 
+[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Release%20to%20AUR-blue.svg?colorA=24292e&colorB=0366d6&style=flat&longCache=true&logo=github)](https://github.com/marketplace/actions/release-to-aur)
+[![CI](https://github.com/fuad-daoud/release-aur/workflows/Test%20Action/badge.svg)](https://github.com/fuad-daoud/release-aur/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A GitHub Action that generates PKGBUILD files for publishing packages to the Arch User Repository (AUR).
 
 ## Features
