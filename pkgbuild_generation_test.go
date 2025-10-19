@@ -42,7 +42,7 @@ func TestGenerateNewVersion(t *testing.T) {
 		t.Errorf("got an err %v", err)
 	}
 
-	expected, err := os.ReadFile("expected/PKGBUILD_pkgmate")
+	expected, err := os.ReadFile("testdata/PKGBUILD_pkgmate")
 
 	if err != nil {
 		t.Errorf("got an err %v\n", err)
@@ -78,7 +78,7 @@ func TestGenerateNewPkgrel(t *testing.T) {
 		t.Errorf("got an err %v", err)
 	}
 
-	expected, err := os.ReadFile("expected/PKGBUILD_pkgmate_rel2")
+	expected, err := os.ReadFile("testdata/PKGBUILD_pkgmate_rel2")
 
 	if err != nil {
 		t.Errorf("got an err %v\n", err)
@@ -160,7 +160,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 	})
 	t.Run("PKGBUILDs match - already published", func(t *testing.T) {
 
-		PKGBUILD_AUR, err := os.ReadFile("expected/PKGBUILD_AUR")
+		PKGBUILD_AUR, err := os.ReadFile("testdata/PKGBUILD_AUR")
 
 		if err != nil {
 			t.Errorf("got an err %v\n", err)

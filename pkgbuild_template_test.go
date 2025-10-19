@@ -33,7 +33,7 @@ func TestTemplate(t *testing.T) {
 		t.Errorf("got an err %v\n", err)
 	}
 
-	expected, err := os.ReadFile("expected/PKGBUILD")
+	expected, err := os.ReadFile("testdata/PKGBUILD")
 
 	if err != nil {
 		t.Errorf("got an err %v\n", err)
@@ -66,7 +66,7 @@ func TestX86Only(t *testing.T) {
 		t.Errorf("got an err %v\n", err)
 	}
 
-	expected, err := os.ReadFile("expected/PKGBUILD_x86")
+	expected, err := os.ReadFile("testdata/PKGBUILD_x86")
 
 	if err != nil {
 		t.Errorf("got an err %v\n", err)
