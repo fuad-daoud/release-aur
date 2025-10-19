@@ -6,7 +6,9 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
+	"time"
 )
 
 type PkgBuild struct {
@@ -26,6 +28,43 @@ type PkgBuild struct {
 	Source_aarch64 []string
 
 	templatePath string
+	outputPath   string
+	client       AURClient
+}
+
+func NewPkgBuild() *PkgBuild {
+	return &PkgBuild{
+		client: NewAURClient(5 * time.Second),
+	}
+}
+func NewPkgBuildFromEnv() *PkgBuild {
+	pkgbuild := NewPkgBuild()
+
+	pkgbuild.Maintainers = strings.Split(os.Getenv("maintainers"), ",")
+	pkgbuild.Contributors = strings.Split(os.Getenv("contributors"), ",")
+	pkgbuild.Pkgname = os.Getenv("pkgname")
+	pkgbuild.Version = os.Getenv("version")
+	pkgbuild.Pkgrel = 1
+	pkgbuild.Description = os.Getenv("description")
+	pkgbuild.Url = os.Getenv("url")
+	pkgbuild.Arch = strings.Split(os.Getenv("arch"), ",")
+	pkgbuild.Licence = strings.Split(os.Getenv("licence"), ",")
+	pkgbuild.Provides = strings.Split(os.Getenv("provides"), ",")
+	pkgbuild.Conflicts = strings.Split(os.Getenv("conflicts"), ",")
+	pkgbuild.Source_x86_64 = strings.Split(os.Getenv("source_x86_64"), ",")
+	pkgbuild.Source_aarch64 = strings.Split(os.Getenv("source_aarch64"), ",")
+
+	pkgbuild.templatePath = getenv("pkgbuild_template", "./pkgbuild.tmpl")
+	pkgbuild.outputPath = getenv("output_path", "./output/PKGBUILD")
+	return pkgbuild
+}
+
+func getenv(key, fallback string) string {
+	value := os.Getenv(key)
+	if len(value) == 0 {
+		return fallback
+	}
+	return value
 }
 
 func (p *PkgBuild) validate() error {
@@ -59,32 +98,32 @@ func (p *PkgBuild) validate() error {
 	return nil
 }
 
-func (pkgbuild *PkgBuild) generate() {
+func (pkgbuild *PkgBuild) generate() (string, error) {
 	slog.Info("starting pkgbuild.generate ..")
 	PKGBUILD, err := pkgbuild.template()
 	if err != nil {
 		slog.Error("Failed to template PKGBUILD dumping\n ", "dump", pkgbuild)
-		os.Exit(1)
+		return "", err
 	}
 
-	data, err := getAurPackageVersions(pkgbuild.Pkgname)
+	data, err := pkgbuild.client.getAurPackageVersions(pkgbuild.Pkgname)
 
 	if err != nil {
-		slog.Error("Failed to fetch package info from AUR", "err", err)
-		os.Exit(1)
+		slog.Error("Failed to fetch package info from AUR")
+		return "", err
 	}
 
 	if data.version == pkgbuild.Version {
 		slog.Warn("AUR version and current version match, this should only be a PKGBUILD update")
 		slog.Info("Comparing PKGBUILD to validate")
-		aurPKGBUILD, err := fetchPKGBUILD(pkgbuild.Pkgname)
+		aurPKGBUILD, err := pkgbuild.client.fetchPKGBUILD(pkgbuild.Pkgname)
 		if err != nil {
-			slog.Error("Failed to fetch PKGBUILD from AUR", "err", err)
-			os.Exit(1)
+			slog.Error("Failed to fetch PKGBUILD from AUR")
+			return "", err
 		}
 		if comparePKGBUILDs(PKGBUILD, aurPKGBUILD) {
 			slog.Error("Files match!! should not publish to the AUR without changes to PKGBUILD file or the software Version")
-			os.Exit(1)
+			return "", fmt.Errorf("PKGBUILD already published to AUR")
 		}
 		slog.Info("New PKGBUILD file increasing pkgrel number to", "pkgrel", data.pkgrel+1)
 		pkgbuild.Pkgrel = data.pkgrel + 1
@@ -93,14 +132,18 @@ func (pkgbuild *PkgBuild) generate() {
 		PKGBUILD, err = pkgbuild.template()
 		if err != nil {
 			slog.Error("Failed to template PKGBUILD dumping\n ", "dump", pkgbuild)
-			os.Exit(1)
+			return "", err
 		}
 	} else {
 		slog.Info("New version means new pkgrel")
 		pkgbuild.Pkgrel = 1
 	}
-	writeFile("./output/PKGBUILD", PKGBUILD)
+
+	if err := writeFile(pkgbuild.outputPath, PKGBUILD); err != nil {
+		return "", err
+	}
 	slog.Info("finished pkgbuild.generate ..")
+	return PKGBUILD, nil
 }
 
 func writeFile(filePath string, content string) error {
@@ -116,8 +159,7 @@ func writeFile(filePath string, content string) error {
 	}
 	defer file.Close()
 
-	_, err = file.WriteString(content)
-	if err != nil {
+	if _, err = file.WriteString(content); err != nil {
 		return err
 	}
 
@@ -132,8 +174,8 @@ func (pkgbuild PkgBuild) template() (string, error) {
 	}
 
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, pkgbuild)
-	if err != nil {
+
+	if err := tmpl.Execute(&buf, pkgbuild); err != nil {
 		return "", err
 	}
 	return buf.String(), nil

@@ -1,6 +1,6 @@
 package main
 
-var pkgbuild_tests = []struct {
+var pkgbuildTests = []struct {
 	name    string
 	pkg     PkgBuild
 	wantErr bool
@@ -174,5 +174,104 @@ var pkgbuild_tests = []struct {
 			Source_aarch64: nil,
 		},
 		wantErr: false,
+	},
+}
+
+var pkgbuildFromEnvTests = []struct {
+	name     string
+	envVars  map[string]string
+	expected PkgBuild
+}{
+	{
+		name: "all fields provided",
+		envVars: map[string]string{
+			"maintainers":       "User1 <user1@example.com>,User2 <user2@example.com>",
+			"contributors":      "Contrib1 <c1@example.com>,Contrib2 <c2@example.com>",
+			"pkgname":           "test-bin",
+			"version":           "1.0.0",
+			"description":       "Test package",
+			"url":               "https://example.com",
+			"arch":              "x86_64,aarch64",
+			"licence":           "MIT,Apache",
+			"provides":          "test,test-cli",
+			"conflicts":         "old-test",
+			"source_x86_64":     "https://example.com/x86",
+			"source_aarch64":    "https://example.com/arm",
+			"pkgbuild_template": "./custom.tmpl",
+		},
+		expected: PkgBuild{
+			Maintainers:    []string{"User1 <user1@example.com>", "User2 <user2@example.com>"},
+			Contributors:   []string{"Contrib1 <c1@example.com>", "Contrib2 <c2@example.com>"},
+			Pkgname:        "test-bin",
+			Version:        "1.0.0",
+			Pkgrel:         1,
+			Description:    "Test package",
+			Url:            "https://example.com",
+			Arch:           []string{"x86_64", "aarch64"},
+			Licence:        []string{"MIT", "Apache"},
+			Provides:       []string{"test", "test-cli"},
+			Conflicts:      []string{"old-test"},
+			Source_x86_64:  []string{"https://example.com/x86"},
+			Source_aarch64: []string{"https://example.com/arm"},
+			templatePath:   "./custom.tmpl",
+		},
+	},
+	{
+		name: "optional fields empty",
+		envVars: map[string]string{
+			"maintainers":   "User1 <user1@example.com>",
+			"pkgname":       "test-bin",
+			"version":       "1.0.0",
+			"description":   "Test package",
+			"url":           "https://example.com",
+			"arch":          "x86_64",
+			"licence":       "MIT",
+			"source_x86_64": "https://example.com/x86",
+		},
+		expected: PkgBuild{
+			Maintainers:    []string{"User1 <user1@example.com>"},
+			Contributors:   []string{""},
+			Pkgname:        "test-bin",
+			Version:        "1.0.0",
+			Pkgrel:         1,
+			Description:    "Test package",
+			Url:            "https://example.com",
+			Arch:           []string{"x86_64"},
+			Licence:        []string{"MIT"},
+			Provides:       []string{""},
+			Conflicts:      []string{""},
+			Source_x86_64:  []string{"https://example.com/x86"},
+			Source_aarch64: []string{""},
+			templatePath:   "./pkgbuild.tmpl",
+		},
+	},
+	{
+		name: "default template path when not provided",
+		envVars: map[string]string{
+			"maintainers":   "User1",
+			"pkgname":       "test",
+			"version":       "1.0.0",
+			"description":   "Test",
+			"url":           "https://example.com",
+			"arch":          "x86_64",
+			"licence":       "MIT",
+			"source_x86_64": "https://example.com/x86",
+		},
+		expected: PkgBuild{
+			Maintainers:    []string{"User1"},
+			Contributors:   []string{""},
+			Pkgname:        "test",
+			Version:        "1.0.0",
+			Pkgrel:         1,
+			Description:    "Test",
+			Url:            "https://example.com",
+			Arch:           []string{"x86_64"},
+			Licence:        []string{"MIT"},
+			Provides:       []string{""},
+			Conflicts:      []string{""},
+			Source_x86_64:  []string{"https://example.com/x86"},
+			Source_aarch64: []string{""},
+			templatePath:   "./pkgbuild.tmpl",
+		},
 	},
 }

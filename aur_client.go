@@ -8,7 +8,22 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
+
+type AURClient struct {
+	base   string
+	client *http.Client
+}
+
+func NewAURClient(timeout time.Duration) AURClient {
+	return AURClient{
+		base: "https://aur.archlinux.org",
+		client: &http.Client{
+			Timeout: timeout,
+		},
+	}
+}
 
 type AurResponse struct {
 	Resultcount int `json:"resultcount"`
@@ -22,8 +37,11 @@ type AurData struct {
 	pkgrel  int
 }
 
-func fetchPKGBUILD(pkgName string) (string, error) {
-	resp, err := http.Get("https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=" + pkgName)
+func (client AURClient) fetchPKGBUILD(pkgName string) (string, error) {
+	if client.client == nil {
+		client.client = &http.Client{Timeout: 10 * time.Second}
+	}
+	resp, err := client.client.Get(client.base + "/cgit/aur.git/plain/PKGBUILD?h=" + pkgName)
 
 	if err != nil {
 		return "", err
@@ -42,8 +60,11 @@ func fetchPKGBUILD(pkgName string) (string, error) {
 	return string(file), nil
 }
 
-func getAurPackageVersions(pkgName string) (AurData, error) {
-	resp, err := http.Get("https://aur.archlinux.org/rpc/?v=5&type=info&arg[]=" + pkgName)
+func (client AURClient) getAurPackageVersions(pkgName string) (AurData, error) {
+	if client.client == nil {
+		client.client = &http.Client{Timeout: 10 * time.Second}
+	}
+	resp, err := client.client.Get(client.base + "/rpc/?v=5&type=info&arg[]=" + pkgName)
 	if err != nil {
 		return AurData{}, err
 	}
@@ -63,12 +84,12 @@ func getAurPackageVersions(pkgName string) (AurData, error) {
 		slog.Error("could not parse", "jsonString", jsonString)
 		return AurData{}, fmt.Errorf("Could not unmarshal the response: %v\n", err)
 	}
-	if result.Resultcount != 0 {
+	if result.Resultcount != 1 {
 		return AurData{}, fmt.Errorf("Invalid number of packages in aur package: %s, found %v", pkgName, result.Results)
 	}
 	version := result.Results[0].Version
 	index := strings.LastIndex(version, "-")
-	pkgRel, err := strconv.Atoi(version[index:])
+	pkgRel, err := strconv.Atoi(version[index+1:])
 	if err != nil {
 		return AurData{}, fmt.Errorf("Couldn't parse pkgRel in version %s", version[index:])
 	}

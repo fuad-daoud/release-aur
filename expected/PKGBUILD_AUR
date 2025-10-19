@@ -1,0 +1,21 @@
+
+#Maintainer:User
+
+
+pkgname=test
+pkgver=1.0.0
+pkgrel=2
+pkgdesc="Test"
+arch=('x86_64')
+url="https://example.com"
+source_x86_64=(
+"test"
+)
+sha256sums_x86_64=('SKIP')
+
+package() {
+    if [ "$CARCH" = "x86_64" ]; then
+        install -Dm755 "$srcdir/$pkgname-$pkgver-x86_64" "$pkgdir/usr/bin/test"
+    fi
+}
+

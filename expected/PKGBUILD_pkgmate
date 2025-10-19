@@ -1,0 +1,23 @@
+
+#Maintainer:Fuad Daoud <aur@fuad-daoud.com>
+
+
+pkgname=pkgmate-bin
+pkgver=100.0.0
+pkgrel=1
+pkgdesc="TUI application to manage your dependencies"
+arch=('x86_64')
+url="https://github.com/fuad-daoud/pkgmate"
+source_x86_64=(
+"pkgmate-bin-100.0.0-x86_64::https://github.com/fuad-daoud/pkgmate/releases/download/100.0.0/pkgmate-linux-amd64"
+"LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v100.0.0/LICENSE"
+"README::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v100.0.0/README.md"
+)
+sha256sums_x86_64=('SKIP')
+
+package() {
+    if [ "$CARCH" = "x86_64" ]; then
+        install -Dm755 "$srcdir/$pkgname-$pkgver-x86_64" "$pkgdir/usr/bin/pkgmate"
+    fi
+}
+
