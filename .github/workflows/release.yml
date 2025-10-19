@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - '*'
+      - "*"
   workflow_dispatch:
 
 permissions:
@@ -13,7 +13,7 @@ jobs:
   release:
     name: Create Release
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,7 +23,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25.3'
+          go-version: "1.25.3"
           cache: true
 
       - name: Run tests
@@ -32,6 +32,41 @@ jobs:
       - name: Build binaries
         run: |
           GOOS=linux GOARCH=amd64 go build -o release-aur-linux-amd64 .
+
+      - name: Validate action.yml
+        run: |
+          echo "Validating action.yml structure..."
+
+          # Check required fields
+          if ! grep -q "^name:" action.yml; then
+            echo "ERROR: Missing 'name' field"
+            exit 1
+          fi
+
+          if ! grep -q "^description:" action.yml; then
+            echo "ERROR: Missing 'description' field"
+            exit 1
+          fi
+
+          if ! grep -q "^author:" action.yml; then
+            echo "ERROR: Missing 'author' field"
+            exit 1
+          fi
+
+          if ! grep -q "^branding:" action.yml; then
+            echo "ERROR: Missing 'branding' section"
+            exit 1
+          fi
+
+          echo "✓ action.yml validation passed"
+
+      - name: Check for workflow files
+        run: |
+          # Marketplace requires no workflow files in root
+          if ls *.yml 2>/dev/null | grep -v "action.yml" | grep -v "action.yaml"; then
+            echo "WARNING: Found workflow files in root. These should be in .github/workflows/"
+          fi
+          echo "✓ No conflicting workflow files in root"
 
       - name: Generate checksums
         run: |
@@ -54,24 +89,6 @@ jobs:
           body_path: release_notes.md
           draft: false
           prerelease: false
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  update-major-tag:
-    name: Update Major Version Tag
-    runs-on: ubuntu-latest
-    needs: release
-    if: startsWith(github.ref, 'refs/tags/v')
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Update major version tag
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          MAJOR_VERSION=$(echo $VERSION | cut -d. -f1)
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -fa "v$MAJOR_VERSION" -m "Update v$MAJOR_VERSION to $VERSION"
-          git push origin "v$MAJOR_VERSION" --force
