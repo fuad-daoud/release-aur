@@ -24,8 +24,9 @@ type PkgBuild struct {
 	Conflicts      []string
 	Source_x86_64  []string
 	Source_aarch64 []string
-}
 
+	templatePath string
+}
 
 func (pkgbuild *PkgBuild) generate() {
 	slog.Info("starting pkgbuild.generate ..")
@@ -93,9 +94,8 @@ func writeFile(filePath string, content string) error {
 }
 
 func (pkgbuild PkgBuild) template() (string, error) {
-	slog.Info("Templating")
-	templateFile := "./pkgbuild.tmpl"
-	tmpl, err := template.ParseFiles(templateFile)
+	slog.Info("Templating ...")
+	tmpl, err := template.ParseFiles(pkgbuild.templatePath)
 	if err != nil {
 		return "", err
 	}

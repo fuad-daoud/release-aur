@@ -16,13 +16,22 @@ func main() {
 	pkgbuild.Pkgrel = 1
 	pkgbuild.Description = os.Getenv("description")
 	pkgbuild.Url = os.Getenv("url")
-	pkgbuild.Arch = strings.Split(os.Getenv("arch"), ",")
+	pkgbuild.Arch = strings.Split(getenv("arch", "MIT"), ",")
 	pkgbuild.Licence = strings.Split(os.Getenv("licence"), ",")
 	pkgbuild.Provides = strings.Split(os.Getenv("provides"), ",")
 	pkgbuild.Conflicts = strings.Split(os.Getenv("conflicts"), ",")
 	pkgbuild.Source_x86_64 = strings.Split(os.Getenv("source_x86_64"), ",")
 	pkgbuild.Source_aarch64 = strings.Split(os.Getenv("source_aarch64"), ",")
 
+	pkgbuild.templatePath = getenv("pkgbuild_template", "./pkgbuild.tmpl")
+
 	pkgbuild.generate()
 	slog.Info("PKGBUILD updated successfully")
+}
+func getenv(key, fallback string) string {
+	value := os.Getenv(key)
+	if len(value) == 0 {
+		return fallback
+	}
+	return value
 }
