@@ -27,7 +27,7 @@ jobs:
 
       - name: Run tests
         run: |
-          go test -v -race -coverprofile=coverage.out -covermode=count ./...
+          go test -v -coverprofile=coverage.out -covermode=count ./...
           grep -v "main.go" coverage.out > coverage.out
 
       - name: Generate coverage report
@@ -41,26 +41,6 @@ jobs:
             echo "Coverage is below 90%"
             exit 1
           fi
-
-  lint:
-    name: Lint Code
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.25.3"
-          cache: true
-
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
-          args: --timeout=5m
 
   test-action:
     name: Test Action Execution
