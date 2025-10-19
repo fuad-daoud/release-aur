@@ -145,6 +145,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Licence:       []string{"MIT"},
 			Source_x86_64: []string{"test"},
 			templatePath:  "./pkgbuild.tmpl",
+			outputPath:    "/tmp/PKGBUILD",
 			client:        AURClient{base: server.URL},
 		}
 
