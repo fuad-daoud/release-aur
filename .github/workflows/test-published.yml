@@ -1,0 +1,150 @@
+name: Test Published Action
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version tag to test (e.g., v0.1.2)"
+        required: true
+        default: "v0.1.2"
+
+jobs:
+  test-local-action:
+    name: Test Local Action (Pre-release)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout this action
+        uses: actions/checkout@v4
+
+      - name: Use local action
+        uses: ./
+        with:
+          cli_name: pkgmate
+          maintainers: "Fuad Daoud <aur@fuad-daoud.com>"
+          pkgname: pkgmate-bin
+          version: 0.1.1
+          description: "TUI application to manage your dependencies"
+          url: "https://github.com/fuad-daoud/pkgmate"
+          arch: "x86_64"
+          licence: "MIT"
+          source_x86_64: "pkgmate-bin-0.1.1-x86_64::https://github.com/fuad-daoud/pkgmate/releases/download/0.1.1/pkgmate-linux-amd64"
+
+      - name: Display generated PKGBUILD
+        run: |
+          echo "=== Generated PKGBUILD ==="
+          cat output/PKGBUILD
+          echo "=========================="
+
+      - name: Validate PKGBUILD format
+        run: |
+          if ! grep -q "pkgname=pkgmate-bin" output/PKGBUILD; then
+            echo "ERROR: pkgname not found"
+            exit 1
+          fi
+          echo "✓ Local action validation passed"
+
+      - name: Upload generated PKGBUILD
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-pkgbuild
+          path: output/PKGBUILD
+
+  test-published-action:
+    name: Test Published Action (As User Would)
+    runs-on: ubuntu-latest
+    needs: test-local-action
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Determine version to test
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Testing version: $VERSION"
+
+      - name: Use published action from marketplace
+        uses: fuad-daoud/release-aur@${{ steps.version.outputs.version }}
+        with:
+          cli_name: example-cli
+          maintainers: "Example User <user@example.com>"
+          pkgname: example-package-bin
+          version: 1.0.0
+          description: "Example package for testing published action"
+          url: "https://github.com/example/example"
+          arch: "x86_64,aarch64"
+          licence: "MIT"
+          provides: "example-cli"
+          conflicts: "example-cli-git"
+          source_x86_64: "https://github.com/example/example/releases/download/v1.0.0/example-1.0.0-x86_64"
+          source_aarch64: "https://github.com/example/example/releases/download/v1.0.0/example-1.0.0-aarch64"
+
+      - name: Display generated PKGBUILD
+        run: |
+          echo "=== Generated PKGBUILD from Published Action ==="
+          cat output/PKGBUILD
+          echo "================================================"
+
+      - name: Validate PKGBUILD content
+        run: |
+          echo "Validating PKGBUILD structure..."
+
+          # Check required fields
+          if ! grep -q "pkgname=example-package-bin" output/PKGBUILD; then
+            echo "ERROR: pkgname not found"
+            exit 1
+          fi
+
+          if ! grep -q "pkgver=1.0.0" output/PKGBUILD; then
+            echo "ERROR: pkgver not found"
+            exit 1
+          fi
+
+          if ! grep -q "pkgdesc=" output/PKGBUILD; then
+            echo "ERROR: pkgdesc not found"
+            exit 1
+          fi
+
+          if ! grep -q "arch=" output/PKGBUILD; then
+            echo "ERROR: arch not found"
+            exit 1
+          fi
+
+          if ! grep -q "source_x86_64=" output/PKGBUILD; then
+            echo "ERROR: source_x86_64 not found"
+            exit 1
+          fi
+
+          if ! grep -q "source_aarch64=" output/PKGBUILD; then
+            echo "ERROR: source_aarch64 not found"
+            exit 1
+          fi
+
+          echo "✓ Published action validation passed"
+
+      - name: Upload generated PKGBUILD
+        uses: actions/upload-artifact@v4
+        with:
+          name: published-action-pkgbuild
+          path: output/PKGBUILD
+
+      - name: Test success notification
+        run: |
+          echo "=========================================="
+          echo "✓ Published action test successful!"
+          echo "=========================================="
+          echo ""
+          echo "Tested version: ${{ steps.version.outputs.version }}"
+          echo "Action is working correctly on GitHub Marketplace"
+          echo ""
+          echo "Users can now use:"
+          echo "  uses: fuad-daoud/release-aur@${{ steps.version.outputs.version }}"
+          echo ""
+          echo "=========================================="
