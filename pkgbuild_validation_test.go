@@ -209,6 +209,7 @@ func TestNewPkgBuildFromEnv(t *testing.T) {
 				"maintainers":       "User1 <user1@example.com>,User2 <user2@example.com>",
 				"contributors":      "Contrib1 <c1@example.com>,Contrib2 <c2@example.com>",
 				"pkgname":           "test-bin",
+				"cli_name":          "test",
 				"version":           "1.0.0",
 				"description":       "Test package",
 				"url":               "https://example.com",
@@ -223,6 +224,7 @@ func TestNewPkgBuildFromEnv(t *testing.T) {
 			expected: PkgBuild{
 				Maintainers:    []string{"User1 <user1@example.com>", "User2 <user2@example.com>"},
 				Contributors:   []string{"Contrib1 <c1@example.com>", "Contrib2 <c2@example.com>"},
+				CliName:        "test",
 				Pkgname:        "test-bin",
 				Version:        "1.0.0",
 				Pkgrel:         1,
@@ -309,6 +311,7 @@ func TestNewPkgBuildFromEnv(t *testing.T) {
 			assert.Equal(t, tt.expected.Maintainers, result.Maintainers)
 			assert.Equal(t, tt.expected.Contributors, result.Contributors)
 			assert.Equal(t, tt.expected.Pkgname, result.Pkgname)
+			assert.Equal(t, tt.expected.CliName, result.CliName)
 			assert.Equal(t, tt.expected.Version, result.Version)
 			assert.Equal(t, tt.expected.Pkgrel, result.Pkgrel)
 			assert.Equal(t, tt.expected.Description, result.Description)

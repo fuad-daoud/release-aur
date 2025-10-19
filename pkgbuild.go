@@ -42,6 +42,7 @@ func NewPkgBuildFromEnv() *PkgBuild {
 
 	pkgbuild.Maintainers = strings.Split(os.Getenv("maintainers"), ",")
 	pkgbuild.Contributors = strings.Split(os.Getenv("contributors"), ",")
+	pkgbuild.CliName = os.Getenv("cli_name")
 	pkgbuild.Pkgname = os.Getenv("pkgname")
 	pkgbuild.Version = os.Getenv("version")
 	pkgbuild.Pkgrel = 1
