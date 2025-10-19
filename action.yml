@@ -1,0 +1,124 @@
+name: "Release to AUR"
+description: "Generate PKGBUILD files for Arch User Repository releases"
+author: "fuad-daoud"
+
+branding:
+  icon: "package"
+  color: "blue"
+
+inputs:
+  cli_name:
+    description: "Name of the CLI binary to install"
+    required: true
+
+  maintainers:
+    description: 'Comma-separated list of maintainers (e.g., "Name <email>")'
+    required: true
+
+  contributors:
+    description: 'Comma-separated list of contributors (e.g., "Name <email>")'
+    required: false
+    default: ""
+
+  pkgname:
+    description: "Package name for AUR"
+    required: true
+
+  version:
+    description: "Version of the package"
+    required: true
+
+  description:
+    description: "Package description"
+    required: true
+
+  url:
+    description: "Project URL"
+    required: true
+
+  arch:
+    description: 'Comma-separated list of architectures (e.g., "x86_64,aarch64")'
+    required: true
+
+  licence:
+    description: 'Comma-separated list of licenses (e.g., "MIT,Apache")'
+    required: true
+
+  provides:
+    description: "Comma-separated list of provided packages"
+    required: false
+    default: ""
+
+  conflicts:
+    description: "Comma-separated list of conflicting packages"
+    required: false
+    default: ""
+
+  source_x86_64:
+    description: "Comma-separated list of x86_64 source URLs"
+    required: true
+
+  source_aarch64:
+    description: "Comma-separated list of aarch64 source URLs"
+    required: false
+    default: ""
+
+  pkgbuild_template:
+    description: "Path to custom PKGBUILD template"
+    required: false
+    default: ""
+
+  output_path:
+    description: "Output path for generated PKGBUILD"
+    required: false
+    default: "./output/PKGBUILD"
+
+outputs:
+  pkgbuild_path:
+    description: "Path to the generated PKGBUILD file"
+    value: ${{ steps.generate.outputs.pkgbuild_path }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: "1.25.3"
+        cache: false
+
+    - name: Build action
+      shell: bash
+      run: |
+        cd ${{ github.action_path }}
+        go build -o release-aur .
+
+    - name: Generate PKGBUILD
+      id: generate
+      shell: bash
+      env:
+        cli_name: ${{ inputs.cli_name }}
+        maintainers: ${{ inputs.maintainers }}
+        contributors: ${{ inputs.contributors }}
+        pkgname: ${{ inputs.pkgname }}
+        version: ${{ inputs.version }}
+        description: ${{ inputs.description }}
+        url: ${{ inputs.url }}
+        arch: ${{ inputs.arch }}
+        licence: ${{ inputs.licence }}
+        provides: ${{ inputs.provides }}
+        conflicts: ${{ inputs.conflicts }}
+        source_x86_64: ${{ inputs.source_x86_64 }}
+        source_aarch64: ${{ inputs.source_aarch64 }}
+        pkgbuild_template: ${{ inputs.pkgbuild_template }}
+        output_path: ${{ inputs.output_path }}
+      run: |
+        cd ${{ github.action_path }}
+        ./release-aur
+        echo "pkgbuild_path=${{ inputs.output_path }}" >> $GITHUB_OUTPUT
+
+    - name: Display generated PKGBUILD
+      shell: bash
+      run: |
+        echo "Generated PKGBUILD:"
+        cat ${{ inputs.output_path }}
