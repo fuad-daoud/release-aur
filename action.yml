@@ -114,7 +114,7 @@ runs:
         output_path: ${{ inputs.output_path }}
       run: |
         cd ${{ github.action_path }}
-        release-aur
+        ./release-aur
         echo "pkgbuild_path=${{ inputs.output_path }}" >> $GITHUB_OUTPUT
 
     - name: Display generated PKGBUILD
