@@ -120,5 +120,6 @@ runs:
     - name: Display generated PKGBUILD
       shell: bash
       run: |
+        cd ${{ github.action_path }}
         echo "Generated PKGBUILD:"
         cat ${{ inputs.output_path }}
