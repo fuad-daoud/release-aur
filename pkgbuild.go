@@ -152,7 +152,7 @@ func (pkgbuild *PkgBuild) generate() (string, error) {
 		if data.new {
 			slog.Info("New package")
 		}
-		slog.Info("New version means new pkgrel")
+		slog.Info("New version means reset pkgrel")
 		pkgbuild.Pkgrel = 1
 	}
 
