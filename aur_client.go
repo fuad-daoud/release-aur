@@ -35,6 +35,7 @@ type AurResponse struct {
 type AurData struct {
 	version string
 	pkgrel  int
+	new     bool
 }
 
 func (client AURClient) fetchPKGBUILD(pkgName string) (string, error) {
@@ -84,8 +85,11 @@ func (client AURClient) getAurPackageVersions(pkgName string) (AurData, error) {
 		slog.Error("could not parse", "jsonString", jsonString)
 		return AurData{}, fmt.Errorf("Could not unmarshal the response: %v\n", err)
 	}
-	if result.Resultcount != 1 {
+	if result.Resultcount > 1 {
 		return AurData{}, fmt.Errorf("Invalid number of packages in aur package: %s, found %v", pkgName, result.Results)
+	}
+	if result.Resultcount == 0 {
+		return AurData{new: true}, nil
 	}
 	version := result.Results[0].Version
 	index := strings.LastIndex(version, "-")

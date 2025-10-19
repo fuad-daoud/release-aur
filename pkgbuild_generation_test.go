@@ -12,8 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
-
 func TestGenerateNewVersion(t *testing.T) {
 
 	pkgbuild := PkgBuild{
@@ -106,7 +104,8 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 		_, err := pkg.generate()
 		assert.Error(t, err)
 	})
-	t.Run("getAurPackageVersions returns 500", func(t *testing.T) {
+
+	t.Run("getAurPackageVersions returns new", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}))
@@ -128,6 +127,29 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 
 		_, err := pkg.generate()
 		assert.Error(t, err)
+	})
+	t.Run("getAurPackageVersions returns no package found", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte(`{"resultcount":0,"results":[]}`))
+		}))
+		defer server.Close()
+
+		pkg := &PkgBuild{
+			CliName:       "test",
+			Maintainers:   []string{"User"},
+			Pkgname:       "test",
+			Version:       "1.0.0",
+			Description:   "Test",
+			Url:           "https://example.com",
+			Arch:          []string{"x86_64"},
+			Licence:       []string{"MIT"},
+			Source_x86_64: []string{"test"},
+			templatePath:  "./pkgbuild.tmpl",
+			client:        AURClient{base: server.URL},
+		}
+
+		_, err := pkg.generate()
+		assert.NoError(t, err)
 	})
 
 	t.Run("fetchPKGBUILD fails when versions match", func(t *testing.T) {
@@ -159,7 +181,6 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 		assert.Error(t, err)
 	})
 	t.Run("PKGBUILDs match - already published", func(t *testing.T) {
-
 		PKGBUILD_AUR, err := os.ReadFile("testdata/PKGBUILD_AUR")
 
 		if err != nil {

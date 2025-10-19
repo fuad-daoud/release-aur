@@ -114,7 +114,7 @@ func (pkgbuild *PkgBuild) generate() (string, error) {
 		return "", err
 	}
 
-	if data.version == pkgbuild.Version {
+	if data.new == false && data.version == pkgbuild.Version {
 		slog.Warn("AUR version and current version match, this should only be a PKGBUILD update")
 		slog.Info("Comparing PKGBUILD to validate")
 		aurPKGBUILD, err := pkgbuild.client.fetchPKGBUILD(pkgbuild.Pkgname)
@@ -136,6 +136,9 @@ func (pkgbuild *PkgBuild) generate() (string, error) {
 			return "", err
 		}
 	} else {
+		if data.new {
+			slog.Info("New package")
+		}
 		slog.Info("New version means new pkgrel")
 		pkgbuild.Pkgrel = 1
 	}

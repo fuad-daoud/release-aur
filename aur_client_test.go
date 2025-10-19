@@ -108,10 +108,9 @@ func TestAURClient_getAurPackageVersions(t *testing.T) {
 		defer server.Close()
 
 		client := AURClient{base: server.URL}
-		_, err := client.getAurPackageVersions("nonexistent")
-
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "Invalid number of packages")
+		data, err := client.getAurPackageVersions("nonexistent")
+		assert.NoError(t, err)
+		assert.True(t, data.new)
 	})
 
 	t.Run("resultcount is more than 1", func(t *testing.T) {
