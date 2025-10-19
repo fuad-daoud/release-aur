@@ -42,6 +42,9 @@ func NewPkgBuildFromEnv() *PkgBuild {
 
 	pkgbuild.Maintainers = strings.Split(os.Getenv("maintainers"), ",")
 	pkgbuild.Contributors = strings.Split(os.Getenv("contributors"), ",")
+	if len(pkgbuild.Contributors) == 1 && pkgbuild.Contributors[0] == "" {
+		pkgbuild.Contributors = []string{}
+	}
 	pkgbuild.CliName = os.Getenv("cli_name")
 	pkgbuild.Pkgname = os.Getenv("pkgname")
 	pkgbuild.Version = os.Getenv("version")
@@ -51,9 +54,19 @@ func NewPkgBuildFromEnv() *PkgBuild {
 	pkgbuild.Arch = strings.Split(os.Getenv("arch"), ",")
 	pkgbuild.Licence = strings.Split(os.Getenv("licence"), ",")
 	pkgbuild.Provides = strings.Split(os.Getenv("provides"), ",")
+	if len(pkgbuild.Provides) == 1 && pkgbuild.Provides[0] == "" {
+		pkgbuild.Provides = []string{}
+	}
 	pkgbuild.Conflicts = strings.Split(os.Getenv("conflicts"), ",")
+	if len(pkgbuild.Conflicts) == 1 && pkgbuild.Conflicts[0] == "" {
+		pkgbuild.Conflicts = []string{}
+	}
 	pkgbuild.Source_x86_64 = strings.Split(os.Getenv("source_x86_64"), ",")
 	pkgbuild.Source_aarch64 = strings.Split(os.Getenv("source_aarch64"), ",")
+
+	if len(pkgbuild.Source_aarch64) == 1 && pkgbuild.Source_aarch64[0] == "" {
+		pkgbuild.Source_aarch64 = []string{}
+	}
 
 	pkgbuild.templatePath = getenv("pkgbuild_template", "./pkgbuild.tmpl")
 	pkgbuild.outputPath = getenv("output_path", "./output/PKGBUILD")
