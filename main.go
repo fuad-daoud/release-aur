@@ -16,7 +16,7 @@ func main() {
 	pkgbuild.Pkgrel = 1
 	pkgbuild.Description = os.Getenv("description")
 	pkgbuild.Url = os.Getenv("url")
-	pkgbuild.Arch = strings.Split(getenv("arch", "MIT"), ",")
+	pkgbuild.Arch = strings.Split(os.Getenv("arch"), ",")
 	pkgbuild.Licence = strings.Split(os.Getenv("licence"), ",")
 	pkgbuild.Provides = strings.Split(os.Getenv("provides"), ",")
 	pkgbuild.Conflicts = strings.Split(os.Getenv("conflicts"), ",")
@@ -24,6 +24,11 @@ func main() {
 	pkgbuild.Source_aarch64 = strings.Split(os.Getenv("source_aarch64"), ",")
 
 	pkgbuild.templatePath = getenv("pkgbuild_template", "./pkgbuild.tmpl")
+
+	if err := pkgbuild.validate(); err != nil {
+		slog.Error("Validation failed", "err", err)
+		os.Exit(1)
+	}
 
 	pkgbuild.generate()
 	slog.Info("PKGBUILD updated successfully")

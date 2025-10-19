@@ -24,12 +24,12 @@ source_aarch64=(
 "{{ . }}"
 {{ end -}}
 )
-{{ end }}
+{{- end }}
 sha256sums_x86_64=('SKIP')
 
 {{- if .Source_aarch64 }}
 sha256sums_aarch64=('SKIP')
-{{ end }}
+{{- end }}
 
 package() {
     if [ "$CARCH" = "x86_64" ]; then
@@ -38,7 +38,7 @@ package() {
 {{- if .Source_aarch64 }}
     elif [ "$CARCH" = "aarch64" ]; then
         install -Dm755 "$srcdir/$pkgname-$pkgver-aarch64" "$pkgdir/usr/bin/{{ .CliName }}"
-{{ end }}
+{{- end }}
     fi
 }
 

@@ -28,6 +28,37 @@ type PkgBuild struct {
 	templatePath string
 }
 
+func (p *PkgBuild) validate() error {
+	if p.CliName == "" {
+		return fmt.Errorf("CliName is required")
+	}
+	if len(p.Maintainers) == 0 {
+		return fmt.Errorf("At least one Maintainer is required")
+	}
+	if p.Pkgname == "" {
+		return fmt.Errorf("Pkgname is required")
+	}
+	if p.Version == "" {
+		return fmt.Errorf("Version is required")
+	}
+	if p.Description == "" {
+		return fmt.Errorf("Description is required")
+	}
+	if p.Url == "" {
+		return fmt.Errorf("Url is required")
+	}
+	if len(p.Arch) == 0 {
+		return fmt.Errorf("At least one Arch is required")
+	}
+	if len(p.Licence) == 0 {
+		return fmt.Errorf("At least one Licence is required")
+	}
+	if len(p.Source_x86_64) == 0 {
+		return fmt.Errorf("Source_x86_64 is required")
+	}
+	return nil
+}
+
 func (pkgbuild *PkgBuild) generate() {
 	slog.Info("starting pkgbuild.generate ..")
 	PKGBUILD, err := pkgbuild.template()
@@ -106,4 +137,12 @@ func (pkgbuild PkgBuild) template() (string, error) {
 		return "", err
 	}
 	return buf.String(), nil
+}
+
+func comparePKGBUILDs(content1, content2 string) bool {
+	slog.Info("Removing check sums and pkgrel to compare ...")
+	norm1 := normalizePKGBUILD(content1)
+	norm2 := normalizePKGBUILD(content2)
+	slog.Info("Removed from both files comparing ...")
+	return norm1 == norm2
 }

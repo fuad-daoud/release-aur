@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"log/slog"
 	"strings"
 )
 
@@ -40,12 +39,4 @@ func normalizePKGBUILD(content string) string {
 	}
 
 	return strings.Join(normalized, "\n")
-}
-
-func comparePKGBUILDs(content1, content2 string) bool {
-	slog.Info("Removing check sums and pkgrel to compare ...")
-	norm1 := normalizePKGBUILD(content1)
-	norm2 := normalizePKGBUILD(content2)
-	slog.Info("Removed from both files comparing ...")
-	return norm1 == norm2
 }
