@@ -1,0 +1,26 @@
+
+#Maintainer:Fuad Daoud <aur@fuad-daoud.com>
+#Maintainer:Fuad2 Daoud2 <aur2@fuad-daoud.com>
+
+#Contributor:Someone else <someone@fuad-daoud.com>
+#Contributor:Someone2 else2  <someone2@fuad-daoud.com>
+
+pkgname=pkg-bin
+pkgver=0.1.4
+pkgrel=1
+pkgdesc="Some single line description"
+arch=('x86_64''aarch_64')
+url="https://github.com/fuad-daoud/pkg"
+source_x86_64=(
+"pkg-bin-0.1.4-x86_64::https://github.com/fuad-daoud/pkg/releases/download/v0.1.4/prayers-linux-x86_64"
+"LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkg/v0.1.4/LICENSE"
+"README::https://raw.githubusercontent.com/fuad-daoud/pkg/v0.1.4/README.md"
+)
+sha256sums_x86_64=('SKIP')
+
+package() {
+    if [ "$CARCH" = "x86_64" ]; then
+        install -Dm755 "$srcdir/$pkgname-$pkgver-x86_64" "$pkgdir/usr/bin/pkg"
+    fi
+}
+
