@@ -28,14 +28,14 @@ jobs:
       - name: Run tests
         run: |
           go test -v -coverprofile=coverage.out -covermode=count ./...
-          grep -v "main.go" coverage.out > coverage.out
+          grep -v "main.go" coverage.out > filtered_coverage.out
 
       - name: Generate coverage report
         run: go tool cover -func=coverage.out
 
       - name: Check coverage threshold
         run: |
-          coverage=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          coverage=$(go tool cover -func=filtered_coverage.out | grep total | awk '{print $3}' | sed 's/%//')
           echo "Total coverage: ${coverage}%"
           if (( $(echo "$coverage < 90" | bc -l) )); then
             echo "Coverage is below 90%"
