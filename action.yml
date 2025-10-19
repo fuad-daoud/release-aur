@@ -113,7 +113,8 @@ runs:
         pkgbuild_template: ${{ inputs.pkgbuild_template }}
         output_path: ${{ inputs.output_path }}
       run: |
-        ${{ github.action_path }}/release-aur
+        cd ${{ github.action_path }}
+        release-aur
         echo "pkgbuild_path=${{ inputs.output_path }}" >> $GITHUB_OUTPUT
 
     - name: Display generated PKGBUILD
