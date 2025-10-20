@@ -2,10 +2,8 @@ name: Test Action
 
 on:
   push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
+    branches:
+      - "**"
 
 jobs:
   test:
@@ -41,9 +39,11 @@ jobs:
             echo "Coverage is below 90%"
             exit 1
           fi
+
   test-local-action:
     name: Test Local Action (Pre-release)
     runs-on: ubuntu-latest
+    needs: [test]
 
     steps:
       - name: Checkout this action
