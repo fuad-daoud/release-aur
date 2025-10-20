@@ -87,33 +87,32 @@ jobs:
         run: |
           echo "Validating PKGBUILD structure..."
 
-          # Check required fields
-          if ! grep -q "pkgname=example-package-bin" output/PKGBUILD; then
+          if ! grep -q "pkgname=example-package-bin" ${{ steps.release-aciton.outputs.pkgbuild_path }}; then
             echo "ERROR: pkgname not found"
             exit 1
           fi
 
-          if ! grep -q "pkgver=1.0.0" output/PKGBUILD; then
+          if ! grep -q "pkgver=1.0.0" ${{ steps.release-aciton.outputs.pkgbuild_path }}; then
             echo "ERROR: pkgver not found"
             exit 1
           fi
 
-          if ! grep -q "pkgdesc=" output/PKGBUILD; then
+          if ! grep -q "pkgdesc=" ${{ steps.release-aciton.outputs.pkgbuild_path }}; then
             echo "ERROR: pkgdesc not found"
             exit 1
           fi
 
-          if ! grep -q "arch=" output/PKGBUILD; then
+          if ! grep -q "arch=" ${{ steps.release-aciton.outputs.pkgbuild_path }}; then
             echo "ERROR: arch not found"
             exit 1
           fi
 
-          if ! grep -q "source_x86_64=" output/PKGBUILD; then
+          if ! grep -q "source_x86_64=" ${{ steps.release-aciton.outputs.pkgbuild_path }}; then
             echo "ERROR: source_x86_64 not found"
             exit 1
           fi
 
-          if ! grep -q "source_aarch64=" output/PKGBUILD; then
+          if ! grep -q "source_aarch64=" ${{ steps.release-aciton.outputs.pkgbuild_path }}; then
             echo "ERROR: source_aarch64 not found"
             exit 1
           fi
@@ -124,7 +123,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: published-action-pkgbuild-release
-          path: output/PKGBUILD
+          path: ${{ steps.release-aciton.outputs.pkgbuild_path }}
 
       - name: Test success notification
         run: |
@@ -174,33 +173,32 @@ jobs:
         run: |
           echo "Validating PKGBUILD structure..."
 
-          # Check required fields
-          if ! grep -q "pkgname=example-package-bin" output/PKGBUILD; then
+          if ! grep -q "pkgname=example-package-bin" ${{ steps.release-aciton.outputs.pkgbuild_path }}; then
             echo "ERROR: pkgname not found"
             exit 1
           fi
 
-          if ! grep -q "pkgver=1.0.0" output/PKGBUILD; then
+          if ! grep -q "pkgver=1.0.0" ${{ steps.release-aciton.outputs.pkgbuild_path }}; then
             echo "ERROR: pkgver not found"
             exit 1
           fi
 
-          if ! grep -q "pkgdesc=" output/PKGBUILD; then
+          if ! grep -q "pkgdesc=" ${{ steps.release-aciton.outputs.pkgbuild_path }}; then
             echo "ERROR: pkgdesc not found"
             exit 1
           fi
 
-          if ! grep -q "arch=" output/PKGBUILD; then
+          if ! grep -q "arch=" ${{ steps.release-aciton.outputs.pkgbuild_path }}; then
             echo "ERROR: arch not found"
             exit 1
           fi
 
-          if ! grep -q "source_x86_64=" output/PKGBUILD; then
+          if ! grep -q "source_x86_64=" ${{ steps.release-aciton.outputs.pkgbuild_path }}; then
             echo "ERROR: source_x86_64 not found"
             exit 1
           fi
 
-          if ! grep -q "source_aarch64=" output/PKGBUILD; then
+          if ! grep -q "source_aarch64=" ${{ steps.release-aciton.outputs.pkgbuild_path }}; then
             echo "ERROR: source_aarch64 not found"
             exit 1
           fi
@@ -211,7 +209,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: published-action-pkgbuild-manual
-          path: output/PKGBUILD
+          path: ${{ steps.release-aciton.outputs.pkgbuild_path }}
 
       - name: Test success notification
         run: |
