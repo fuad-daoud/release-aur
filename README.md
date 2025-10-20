@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Generate PKGBUILD
-        uses: fuad-daoud/release-aur@v1
+        uses: fuad-daoud/release-aur@latest
         with:
           cli_name: 'myapp'
           maintainers: 'Your Name <your.email@example.com>'
@@ -108,14 +108,15 @@ jobs:
 | `version` | Version of the package | Yes | - |
 | `description` | Package description | Yes | - |
 | `url` | Project URL | Yes | - |
-| `arch` | Comma-separated list of architectures | Yes | '' |
+| `arch` | Comma-separated list of architectures | Yes | - |
 | `licence` | Comma-separated list of licenses | Yes | - |
 | `provides` | Comma-separated list of provided packages | No | `''` |
 | `conflicts` | Comma-separated list of conflicting packages | No | `''` |
 | `source_x86_64` | Comma-separated list of x86_64 source URLs | Yes | - |
 | `source_aarch64` | Comma-separated list of aarch64 source URLs | No | `''` |
-| `pkgbuild_template` | Path to custom PKGBUILD template | No | `''` |
-| `output_path` | Output path for generated PKGBUILD | No | `./output/PKGBUILD` |
+| `pkgbuild_template` | Path to custom PKGBUILD template relative to the github action path | No | `pkgbuild.tmpl` |
+| `srcinfo_template` | Path to custom .SRCINFO template relative to the github action path | No | `srcinfo.tmpl` |
+| `output_path` | Output path where the PKGBUILD will be generated relative to workspace root | No | `PKGBUILD` |
 
 ## Outputs
 

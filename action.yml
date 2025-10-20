@@ -68,15 +68,23 @@ inputs:
     required: false
     default: "pkgbuild.tmpl"
 
-  output_path:
-    description: "Output path for generated PKGBUILD relative to workspace root"
+  srcinfo_template:
+    description: "Path to custom .SRCINFO template relative to the github action path"
     required: false
-    default: "PKGBUILD"
+    default: "srcinfo.tmpl"
+
+  output_path:
+    description: "Output path where the PKGBUILD will be generated relative to workspace root"
+    required: false
+    default: ""
 
 outputs:
   pkgbuild_path:
     description: "Path to the generated PKGBUILD file"
     value: ${{ steps.generate.outputs.pkgbuild_path }}
+  srcinfo_path:
+    description: "Path to the generated .SRCINFO file"
+    value: ${{ steps.generate.outputs.srcinfo_path }}
 
 runs:
   using: "composite"
@@ -110,7 +118,9 @@ runs:
         source_x86_64: ${{ inputs.source_x86_64 }}
         source_aarch64: ${{ inputs.source_aarch64 }}
         pkgbuild_template: ${{ github.action_path }}/${{ inputs.pkgbuild_template }}
+        srcinfo_template: ${{ github.action_path }}/${{ inputs.srcinfo_template }}
         output_path: ${{ github.workspace }}/${{ inputs.output_path }}
       run: |
         ./build-pkgbuild
         echo "pkgbuild_path=${{ github.workspace }}/${{ inputs.output_path }}" >> $GITHUB_OUTPUT
+        echo "srcinfo_path=${{ github.workspace }}/${{ inputs.output_path }}" >> $GITHUB_OUTPUT

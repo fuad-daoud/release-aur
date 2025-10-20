@@ -43,6 +43,7 @@ jobs:
   test-local-action:
     name: Test Local Action (Pre-release)
     runs-on: ubuntu-latest
+    container: archlinux:latest
     needs: [test]
 
     steps:
@@ -63,9 +64,12 @@ jobs:
           licence: "MIT"
           source_x86_64: "pkgmate-bin-0.1.1-x86_64::https://github.com/fuad-daoud/pkgmate/releases/download/0.1.1/pkgmate-linux-amd64"
 
-      - name: Display generated PKGBUILD
+      - name: Display generated PKGBUILD and .SRCINFO
         run: |
           echo "=== Generated PKGBUILD ==="
+          cat ${{ steps.release-aciton.outputs.pkgbuild_path }}
+          echo "=========================="
+          echo "=== Generated .SRCINFO ==="
           cat ${{ steps.release-aciton.outputs.pkgbuild_path }}
           echo "=========================="
 
@@ -76,6 +80,9 @@ jobs:
             exit 1
           fi
           echo "✓ Local action validation passed"
+      - name: Validate .SRCINFO using makepkg
+        run: |
+          makepkg -p ${{ steps.release-action.outputs.srcinfo_path }} --printsrcinfo
 
       - name: Upload generated PKGBUILD
         uses: actions/upload-artifact@v4
