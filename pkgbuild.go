@@ -48,6 +48,10 @@ func NewPkgBuildFromEnv() *PkgBuild {
 	pkgbuild.CliName = os.Getenv("cli_name")
 	pkgbuild.Pkgname = os.Getenv("pkgname")
 	pkgbuild.Version = os.Getenv("version")
+	if strings.HasPrefix(pkgbuild.Version, "v") && strings.Count(pkgbuild.Version, ".") >= 2 {
+		slog.Info("Version starts with 'v' and contains two or more '.', so removing the 'v'", "count", strings.Count(pkgbuild.Version, "."))
+		pkgbuild.Version = pkgbuild.Version[1:]
+	}
 	pkgbuild.Pkgrel = 1
 	pkgbuild.Description = os.Getenv("description")
 	pkgbuild.Url = os.Getenv("url")
@@ -82,6 +86,7 @@ func getenv(key, fallback string) string {
 }
 
 func (p *PkgBuild) validate() error {
+	slog.Info("Validating", "pkgbuild", p)
 	if p.CliName == "" {
 		return fmt.Errorf("CliName is required")
 	}
@@ -109,6 +114,7 @@ func (p *PkgBuild) validate() error {
 	if len(p.Source_x86_64) == 0 {
 		return fmt.Errorf("Source_x86_64 is required")
 	}
+	slog.Info("Input is valid")
 	return nil
 }
 
