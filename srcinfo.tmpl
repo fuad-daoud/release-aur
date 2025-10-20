@@ -1,0 +1,37 @@
+pkgbase = {{ .Pkgname }}
+	pkgdesc = {{ .Description }}
+	pkgver = {{ .Version }}
+	pkgrel = {{ .Pkgrel }}
+	url = {{ .Url }}
+{{- range .Arch }}
+	arch = {{ . }}
+{{- end }}
+{{- if .Licence }}
+{{- range .Licence }}
+	license = {{ . }}
+{{- end }}
+{{- end }}
+{{- if .Provides }}
+{{- range .Provides }}
+	provides = {{ . }}
+{{- end }}
+{{- end }}
+{{- if .Conflicts }}
+{{- range .Conflicts }}
+	conflicts = {{ . }}
+{{- end }}
+{{- end }}
+{{- range .Source_x86_64 }}
+	source_x86_64 = {{ . }}
+{{- end }}
+{{- if .Source_x86_64 }}
+	sha256sums_x86_64 = SKIP
+{{- end }}
+{{- if .Source_aarch64 }}
+{{- range .Source_aarch64 }}
+	source_aarch64 = {{ . }}
+{{- end }}
+	sha256sums_aarch64 = SKIP
+{{- end }}
+
+pkgname = {{ .Pkgname }}

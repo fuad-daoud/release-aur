@@ -27,9 +27,10 @@ type PkgBuild struct {
 	Source_x86_64  []string
 	Source_aarch64 []string
 
-	templatePath string
-	outputPath   string
-	client       AURClient
+	pkgbuildTemplatePath string
+	srcInfoTemplatePath  string
+	outputPath           string
+	client               AURClient
 }
 
 func NewPkgBuild() *PkgBuild {
@@ -72,7 +73,8 @@ func NewPkgBuildFromEnv() *PkgBuild {
 		pkgbuild.Source_aarch64 = []string{}
 	}
 
-	pkgbuild.templatePath = getenv("pkgbuild_template", "./pkgbuild.tmpl")
+	pkgbuild.pkgbuildTemplatePath = getenv("pkgbuild_template", "./pkgbuild.tmpl")
+	pkgbuild.pkgbuildTemplatePath = getenv("srcinfo_template", "./srcinfo.tmpl")
 	pkgbuild.outputPath = getenv("output_path", "./output/PKGBUILD")
 	return pkgbuild
 }
@@ -120,7 +122,7 @@ func (p *PkgBuild) validate() error {
 
 func (pkgbuild *PkgBuild) generate() (string, error) {
 	slog.Info("starting pkgbuild.generate ..")
-	PKGBUILD, err := pkgbuild.template()
+	PKGBUILD, SRCINFO, err := pkgbuild.template()
 	if err != nil {
 		slog.Error("Failed to template PKGBUILD dumping\n ", "dump", pkgbuild)
 		return "", err
@@ -149,7 +151,7 @@ func (pkgbuild *PkgBuild) generate() (string, error) {
 		pkgbuild.Pkgrel = data.pkgrel + 1
 
 		slog.Info("Templating again")
-		PKGBUILD, err = pkgbuild.template()
+		PKGBUILD, SRCINFO, err = pkgbuild.template()
 		if err != nil {
 			slog.Error("Failed to template PKGBUILD dumping\n ", "dump", pkgbuild)
 			return "", err
@@ -165,6 +167,14 @@ func (pkgbuild *PkgBuild) generate() (string, error) {
 	if err := writeFile(pkgbuild.outputPath, PKGBUILD); err != nil {
 		return "", err
 	}
+	slog.Info("Wrote PKGBUILD")
+
+	if err := writeFile(pkgbuild.outputPath, SRCINFO); err != nil {
+		return "", err
+	}
+
+	slog.Info("Wrote SRCINFO")
+
 	slog.Info("finished pkgbuild.generate ..")
 	return PKGBUILD, nil
 }
@@ -189,7 +199,8 @@ func writeFile(filePath string, content string) error {
 	return nil
 }
 
-func (pkgbuild PkgBuild) template() (string, error) {
+
+func (pkgbuild PkgBuild) template() (string, string, error) {
 	slog.Info("Templating ...")
 	tmpl := template.New("pkgbuild").Funcs(template.FuncMap{
 		"join_quoted": func(items []string, sep string) string {
@@ -200,17 +211,24 @@ func (pkgbuild PkgBuild) template() (string, error) {
 			return strings.Join(quoted, sep)
 		},
 	})
-	tmpl, err := tmpl.ParseFiles(pkgbuild.templatePath)
+	tmpl, err := tmpl.ParseFiles(pkgbuild.pkgbuildTemplatePath, pkgbuild.srcInfoTemplatePath)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	var buf bytes.Buffer
-	templateName := filepath.Base(pkgbuild.templatePath)
-	if err := tmpl.ExecuteTemplate(&buf, templateName, pkgbuild); err != nil {
-		return "", err
+	var pkgbuildBuf bytes.Buffer
+	templateName := filepath.Base(pkgbuild.pkgbuildTemplatePath)
+	if err := tmpl.ExecuteTemplate(&pkgbuildBuf, templateName, pkgbuild); err != nil {
+		return "", "", err
 	}
-	return buf.String(), nil
+
+	var srcinfoBuf bytes.Buffer
+	templateName = filepath.Base(pkgbuild.srcInfoTemplatePath)
+	if err := tmpl.ExecuteTemplate(&srcinfoBuf, templateName, pkgbuild); err != nil {
+		return "", "", err
+	}
+
+	return pkgbuildBuf.String(), srcinfoBuf.String(), nil
 }
 
 func comparePKGBUILDs(content1, content2 string) bool {

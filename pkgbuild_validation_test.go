@@ -236,7 +236,7 @@ func TestNewPkgBuildFromEnv(t *testing.T) {
 				Conflicts:      []string{"old-test"},
 				Source_x86_64:  []string{"https://example.com/x86"},
 				Source_aarch64: []string{"https://example.com/arm"},
-				templatePath:   "./custom.tmpl",
+				pkgbuildTemplatePath:   "./custom.tmpl",
 			},
 		},
 		{
@@ -272,7 +272,7 @@ func TestNewPkgBuildFromEnv(t *testing.T) {
 				Conflicts:      []string{"old-test"},
 				Source_x86_64:  []string{"https://example.com/x86"},
 				Source_aarch64: []string{"https://example.com/arm"},
-				templatePath:   "./custom.tmpl",
+				pkgbuildTemplatePath:   "./custom.tmpl",
 			},
 		},
 		{
@@ -301,7 +301,7 @@ func TestNewPkgBuildFromEnv(t *testing.T) {
 				Conflicts:      []string{},
 				Source_x86_64:  []string{"https://example.com/x86"},
 				Source_aarch64: []string{},
-				templatePath:   "./pkgbuild.tmpl",
+				pkgbuildTemplatePath:   "./pkgbuild.tmpl",
 			},
 		},
 		{
@@ -330,7 +330,7 @@ func TestNewPkgBuildFromEnv(t *testing.T) {
 				Conflicts:      []string{},
 				Source_x86_64:  []string{"https://example.com/x86"},
 				Source_aarch64: []string{},
-				templatePath:   "./pkgbuild.tmpl",
+				pkgbuildTemplatePath:   "./pkgbuild.tmpl",
 			},
 		},
 	}
@@ -358,7 +358,7 @@ func TestNewPkgBuildFromEnv(t *testing.T) {
 			assert.Equal(t, tt.expected.Conflicts, result.Conflicts)
 			assert.Equal(t, tt.expected.Source_x86_64, result.Source_x86_64)
 			assert.Equal(t, tt.expected.Source_aarch64, result.Source_aarch64)
-			assert.Equal(t, tt.expected.templatePath, result.templatePath)
+			assert.Equal(t, tt.expected.pkgbuildTemplatePath, result.pkgbuildTemplatePath)
 		})
 	}
 }

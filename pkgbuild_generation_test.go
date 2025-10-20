@@ -26,7 +26,7 @@ func TestGenerateNewVersion(t *testing.T) {
 		Licence:       []string{"MIT"},
 		Source_x86_64: []string{"pkgmate-bin-100.0.0-x86_64::https://github.com/fuad-daoud/pkgmate/releases/download/100.0.0/pkgmate-linux-amd64", "LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v100.0.0/LICENSE", "README::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v100.0.0/README.md"},
 
-		templatePath: "pkgbuild.tmpl",
+		pkgbuildTemplatePath: "pkgbuild.tmpl",
 		outputPath:   "./output/PKGBUILD",
 		client:       NewAURClient(5 * time.Second, 5 * time.Second, 5),
 	}
@@ -63,7 +63,7 @@ func TestGenerateNewPkgrel(t *testing.T) {
 		Source_x86_64: []string{"pkgmate-bin-0.1.1-x86_64::https://github.com/fuad-daoud/pkgmate/releases/download/0.1.1/pkgmate-linux-amd64", "LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v0.1.1/LICENSE", "README::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v0.1.1/README.md"},
 
 		outputPath:   "./output/PKGBUILD",
-		templatePath: "pkgbuild.tmpl",
+		pkgbuildTemplatePath: "pkgbuild.tmpl",
 		client:       NewAURClient(5 * time.Second, 5 * time.Second, 5),
 	}
 	err := pkgbuild.validate()
@@ -97,7 +97,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Arch:          []string{"x86_64"},
 			Licence:       []string{"MIT"},
 			Source_x86_64: []string{"test"},
-			templatePath:  "./nonexistent.tmpl",
+			pkgbuildTemplatePath:  "./nonexistent.tmpl",
 			client:        NewAURClient(5*time.Second, time.Second, 1),
 		}
 
@@ -121,7 +121,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Arch:          []string{"x86_64"},
 			Licence:       []string{"MIT"},
 			Source_x86_64: []string{"test"},
-			templatePath:  "./pkgbuild.tmpl",
+			pkgbuildTemplatePath:  "./pkgbuild.tmpl",
 			client:        DummyAURClient(server),
 		}
 
@@ -144,7 +144,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Arch:          []string{"x86_64"},
 			Licence:       []string{"MIT"},
 			Source_x86_64: []string{"test"},
-			templatePath:  "./pkgbuild.tmpl",
+			pkgbuildTemplatePath:  "./pkgbuild.tmpl",
 			outputPath:    "/tmp/PKGBUILD",
 			client:        DummyAURClient(server),
 		}
@@ -173,7 +173,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Arch:          []string{"x86_64"},
 			Licence:       []string{"MIT"},
 			Source_x86_64: []string{"test"},
-			templatePath:  "./pkgbuild.tmpl",
+			pkgbuildTemplatePath:  "./pkgbuild.tmpl",
 			client:        DummyAURClient(server),
 			outputPath:    "/root/PKGBUILD",
 		}
@@ -207,7 +207,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Arch:          []string{"x86_64"},
 			Licence:       []string{"MIT"},
 			Source_x86_64: []string{"test"},
-			templatePath:  "./pkgbuild.tmpl",
+			pkgbuildTemplatePath:  "./pkgbuild.tmpl",
 			client:        DummyAURClient(server),
 			outputPath:    "/root/PKGBUILD",
 		}
@@ -251,7 +251,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Arch:          []string{"x86_64"},
 			Licence:       []string{"MIT"},
 			Source_x86_64: []string{"test"},
-			templatePath:  "/tmp/pkgbuild.tmpl",
+			pkgbuildTemplatePath:  "/tmp/pkgbuild.tmpl",
 			client:        DummyAURClient(server),
 			outputPath:    "/root/PKGBUILD",
 		}
@@ -281,7 +281,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Arch:          []string{"x86_64"},
 			Licence:       []string{"MIT"},
 			Source_x86_64: []string{"test"},
-			templatePath:  "pkgbuild.tmpl",
+			pkgbuildTemplatePath:  "pkgbuild.tmpl",
 			client:        DummyAURClient(server),
 			outputPath:    "/root/PKGBUILD",
 		}
