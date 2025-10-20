@@ -43,7 +43,6 @@ jobs:
   test-local-action:
     name: Test Local Action (Pre-release)
     runs-on: ubuntu-latest
-    # container: archlinux:latest
     needs: [test]
 
     steps:
@@ -51,7 +50,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Use local action
-        id: release-aciton
+        id: release-action
         uses: ./
         with:
           cli_name: pkgmate
@@ -67,10 +66,10 @@ jobs:
       - name: Display generated PKGBUILD and .SRCINFO
         run: |
           echo "=== Generated PKGBUILD ==="
-          cat ${{ steps.release-aciton.outputs.pkgbuild_path }}
+          cat ${{ steps.release-aciton.outputs.pkgbuild_path }}PKGBUILD
           echo "=========================="
           echo "=== Generated .SRCINFO ==="
-          cat ${{ steps.release-aciton.outputs.pkgbuild_path }}
+          cat ${{ steps.release-aciton.outputs.pkgbuild_path }}.SRCINFO
           echo "=========================="
 
       - name: Validate PKGBUILD format
@@ -80,12 +79,38 @@ jobs:
             exit 1
           fi
           echo "✓ Local action validation passed"
-      - name: Validate .SRCINFO using makepkg
-        run: |
-          makepkg -p ${{ steps.release-action.outputs.srcinfo_path }} --printsrcinfo
 
       - name: Upload generated PKGBUILD
         uses: actions/upload-artifact@v4
         with:
           name: local-pkgbuild
           path: ${{ steps.release-aciton.outputs.pkgbuild_path }}
+
+
+
+      - name: Install makepkg (if needed)
+        run: |
+          if ! command -v makepkg &> /dev/null; then
+            echo "Installing pacman for makepkg..."
+            sudo apt-get update
+            sudo apt-get install -y pacman
+          fi
+
+      - name: Validate .SRCINFO using makepkg
+        run: |
+          cd ${{ steps.release-aciton.outputs.pkgbuild_path }}
+          
+          echo "=== Generating .SRCINFO from PKGBUILD using makepkg ==="
+          makepkg --printsrcinfo > .SRCINFO.makepkg
+          
+          echo "=== Comparing generated .SRCINFO with makepkg output ==="
+          if diff -u .SRCINFO .SRCINFO.makepkg; then
+            echo "✓ .SRCINFO matches makepkg output"
+          else
+            echo "✗ .SRCINFO differs from makepkg output"
+            echo "=== Your generated .SRCINFO ==="
+            cat .SRCINFO
+            echo "=== makepkg generated .SRCINFO ==="
+            cat .SRCINFO.makepkg
+            exit 1
+          fi
