@@ -192,13 +192,13 @@ func writeFile(filePath string, content string) error {
 func (pkgbuild PkgBuild) template() (string, error) {
 	slog.Info("Templating ...")
 	tmpl := template.New("pkgbuild").Funcs(template.FuncMap{
-"join_quoted": func(items []string, sep string) string {
-	quoted := make([]string, len(items))
-	for i, item := range items {
-		quoted[i] = "'" + item + "'"
-	}
-	return strings.Join(quoted, sep)
-},
+		"join_quoted": func(items []string, sep string) string {
+			quoted := make([]string, len(items))
+			for i, item := range items {
+				quoted[i] = "'" + item + "'"
+			}
+			return strings.Join(quoted, sep)
+		},
 	})
 	tmpl, err := tmpl.ParseFiles(pkgbuild.templatePath)
 	if err != nil {
