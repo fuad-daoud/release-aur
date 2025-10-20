@@ -74,8 +74,8 @@ func NewPkgBuildFromEnv() *PkgBuild {
 	}
 
 	pkgbuild.pkgbuildTemplatePath = getenv("pkgbuild_template", "./pkgbuild.tmpl")
-	pkgbuild.pkgbuildTemplatePath = getenv("srcinfo_template", "./srcinfo.tmpl")
-	pkgbuild.outputPath = getenv("output_path", "./output/PKGBUILD")
+	pkgbuild.srcInfoTemplatePath = getenv("srcinfo_template", "./srcinfo.tmpl")
+	pkgbuild.outputPath = getenv("output_path", "./output/")
 	return pkgbuild
 }
 
@@ -164,16 +164,16 @@ func (pkgbuild *PkgBuild) generate() (string, error) {
 		pkgbuild.Pkgrel = 1
 	}
 
-	if err := writeFile(pkgbuild.outputPath, PKGBUILD); err != nil {
+	if err := writeFile(pkgbuild.outputPath+"PKGBUILD", PKGBUILD); err != nil {
 		return "", err
 	}
 	slog.Info("Wrote PKGBUILD")
 
-	if err := writeFile(pkgbuild.outputPath, SRCINFO); err != nil {
+	if err := writeFile(pkgbuild.outputPath+".SRCINFO", SRCINFO); err != nil {
 		return "", err
 	}
 
-	slog.Info("Wrote SRCINFO")
+	slog.Info("Wrote .SRCINFO")
 
 	slog.Info("finished pkgbuild.generate ..")
 	return PKGBUILD, nil
@@ -198,7 +198,6 @@ func writeFile(filePath string, content string) error {
 
 	return nil
 }
-
 
 func (pkgbuild PkgBuild) template() (string, string, error) {
 	slog.Info("Templating ...")

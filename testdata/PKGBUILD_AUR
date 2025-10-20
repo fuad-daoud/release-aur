@@ -8,6 +8,9 @@ pkgrel=2
 pkgdesc="Test"
 arch=('x86_64')
 url="https://example.com"
+license=('MIT')
+provides=()
+conflicts=()
 source_x86_64=(
 "test"
 )
