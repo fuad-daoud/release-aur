@@ -61,6 +61,9 @@ func (client AURClient) get(path string) ([]byte, error) {
 		}
 		client.tries--
 		slog.Warn("Got wrong status trying again", "duration before retry", client.waitRetryDuration, "tries left", client.tries)
+		if client.tries == 0 {
+			break
+		}
 		time.Sleep(client.waitRetryDuration)
 	}
 	if resp.StatusCode != 200 {
