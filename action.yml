@@ -64,14 +64,14 @@ inputs:
     default: ""
 
   pkgbuild_template:
-    description: "Path to custom PKGBUILD template"
+    description: "Path to custom PKGBUILD template relative to the github action path"
     required: false
-    default: ""
+    default: "pkgbuild.tmpl"
 
   output_path:
-    description: "Output path for generated PKGBUILD"
+    description: "Output path for generated PKGBUILD relative to workspace root"
     required: false
-    default: ""
+    default: "PKGBUILD"
 
 outputs:
   pkgbuild_path:
@@ -109,8 +109,8 @@ runs:
         conflicts: ${{ inputs.conflicts }}
         source_x86_64: ${{ inputs.source_x86_64 }}
         source_aarch64: ${{ inputs.source_aarch64 }}
-        pkgbuild_template: ${{ inputs.pkgbuild_template }}
-        output_path: ${{ inputs.output_path || format('{0}/PKGBUILD', github.action_path) }}
+        pkgbuild_template: ${{ github.action_path }}${{ inputs.pkgbuild_template }}
+        output_path: ${{ github.workspace }}/${{ inputs.output_path }}
       run: |
         ./build-pkgbuild
         echo "pkgbuild_path=${{ inputs.output_path }}" >> $GITHUB_OUTPUT
