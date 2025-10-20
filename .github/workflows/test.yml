@@ -74,7 +74,7 @@ jobs:
 
       - name: Validate PKGBUILD format
         run: |
-          if ! grep -q "pkgname=pkgmate-bin" ${{ steps.release.action.outputs.pkgbuild_path }}; then
+          if ! grep -q "pkgname=pkgmate-bin" ${{ steps.release.action.outputs.pkgbuild_path }}PKGBUILD; then
             echo "ERROR: pkgname not found"
             exit 1
           fi
@@ -84,7 +84,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: local-pkgbuild
-          path: ${{ steps.release.action.outputs.pkgbuild_path }}
+          path: ${{ steps.release.action.outputs.pkgbuild_path }}PKGBUILD
 
 
 
