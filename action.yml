@@ -90,8 +90,7 @@ runs:
     - name: Build action
       shell: bash
       run: |
-        cd ${{ github.action_path }}
-        go build -o release-aur .
+        go build -C ${{ github.action_path }} -o $(pwd)/build-pkgbuild
 
     - name: Generate PKGBUILD
       id: generate
@@ -113,13 +112,11 @@ runs:
         pkgbuild_template: ${{ inputs.pkgbuild_template }}
         output_path: ${{ inputs.output_path }}
       run: |
-        cd ${{ github.action_path }}
-        ./release-aur
+        ./build-pkgbuild
         echo "pkgbuild_path=${{ inputs.output_path }}" >> $GITHUB_OUTPUT
 
     - name: Display generated PKGBUILD
       shell: bash
       run: |
-        cd ${{ github.action_path }}
         echo "Generated PKGBUILD:"
         cat ${{ inputs.output_path }}
