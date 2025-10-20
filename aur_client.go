@@ -21,8 +21,8 @@ type AURClient struct {
 func NewAURClient(timeout, waitRetryDuration time.Duration, tries int) AURClient {
 	return AURClient{
 		base:              "https://aur.archlinux.org",
-		tries:             min(tries, 1),
-		waitRetryDuration: min(100*time.Millisecond, waitRetryDuration),
+		tries:             max(tries, 1),
+		waitRetryDuration: max(100*time.Millisecond, waitRetryDuration),
 		client: &http.Client{
 			Timeout: timeout,
 		},
