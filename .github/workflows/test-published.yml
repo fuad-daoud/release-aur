@@ -146,7 +146,7 @@ jobs:
 
     steps:
       - name: Use published action from marketplace
-        uses: fuad-daoud/release-aur@${{ github.event.inputs.version }}
+        uses: fuad-daoud/release-aur@main
         with:
           cli_name: example-cli
           maintainers: "Example User <user@example.com>"
