@@ -66,15 +66,15 @@ jobs:
       - name: Display generated PKGBUILD and .SRCINFO
         run: |
           echo "=== Generated PKGBUILD ==="
-          cat ${{ steps.release-aciton.outputs.pkgbuild_path }}PKGBUILD
+          cat ${{ steps.release.action.outputs.pkgbuild_path }}PKGBUILD
           echo "=========================="
           echo "=== Generated .SRCINFO ==="
-          cat ${{ steps.release-aciton.outputs.pkgbuild_path }}.SRCINFO
+          cat ${{ steps.release.action.outputs.pkgbuild_path }}.SRCINFO
           echo "=========================="
 
       - name: Validate PKGBUILD format
         run: |
-          if ! grep -q "pkgname=pkgmate-bin" ${{ steps.release-aciton.outputs.pkgbuild_path }}; then
+          if ! grep -q "pkgname=pkgmate-bin" ${{ steps.release.action.outputs.pkgbuild_path }}; then
             echo "ERROR: pkgname not found"
             exit 1
           fi
@@ -84,7 +84,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: local-pkgbuild
-          path: ${{ steps.release-aciton.outputs.pkgbuild_path }}
+          path: ${{ steps.release.action.outputs.pkgbuild_path }}
 
 
 
@@ -98,7 +98,7 @@ jobs:
 
       - name: Validate .SRCINFO using makepkg
         run: |
-          cd ${{ steps.release-aciton.outputs.pkgbuild_path }}
+          cd ${{ steps.release.action.outputs.pkgbuild_path }}
           
           echo "=== Generating .SRCINFO from PKGBUILD using makepkg ==="
           makepkg --printsrcinfo > .SRCINFO.makepkg
