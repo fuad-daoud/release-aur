@@ -34,7 +34,7 @@ type PkgBuild struct {
 
 func NewPkgBuild() *PkgBuild {
 	return &PkgBuild{
-		client: NewAURClient(5 * time.Second, 5 * time.Second, 5),
+		client: NewAURClient(5*time.Second, 5*time.Second, 5),
 	}
 }
 func NewPkgBuildFromEnv() *PkgBuild {
@@ -191,14 +191,23 @@ func writeFile(filePath string, content string) error {
 
 func (pkgbuild PkgBuild) template() (string, error) {
 	slog.Info("Templating ...")
-	tmpl, err := template.ParseFiles(pkgbuild.templatePath)
+	tmpl := template.New("pkgbuild").Funcs(template.FuncMap{
+"join_quoted": func(items []string, sep string) string {
+	quoted := make([]string, len(items))
+	for i, item := range items {
+		quoted[i] = "'" + item + "'"
+	}
+	return strings.Join(quoted, sep)
+},
+	})
+	tmpl, err := tmpl.ParseFiles(pkgbuild.templatePath)
 	if err != nil {
 		return "", err
 	}
 
 	var buf bytes.Buffer
-
-	if err := tmpl.Execute(&buf, pkgbuild); err != nil {
+	templateName := filepath.Base(pkgbuild.templatePath)
+	if err := tmpl.ExecuteTemplate(&buf, templateName, pkgbuild); err != nil {
 		return "", err
 	}
 	return buf.String(), nil

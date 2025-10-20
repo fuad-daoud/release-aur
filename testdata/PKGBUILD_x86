@@ -9,7 +9,7 @@ pkgname=pkg-bin
 pkgver=0.1.4
 pkgrel=1
 pkgdesc="Some single line description"
-arch=('x86_64''aarch_64')
+arch=('x86_64' 'aarch_64')
 url="https://github.com/fuad-daoud/pkg"
 source_x86_64=(
 "pkg-bin-0.1.4-x86_64::https://github.com/fuad-daoud/pkg/releases/download/v0.1.4/prayers-linux-x86_64"
