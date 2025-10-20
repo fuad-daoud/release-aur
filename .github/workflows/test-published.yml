@@ -20,6 +20,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Use local action
+        id: release-aciton
         uses: ./
         with:
           cli_name: pkgmate
@@ -35,7 +36,7 @@ jobs:
       - name: Display generated PKGBUILD
         run: |
           echo "=== Generated PKGBUILD ==="
-          cat output/PKGBUILD
+          cat ${{ steps.release-aciton.outputs.pkgbuild_path }}
           echo "=========================="
 
       - name: Validate PKGBUILD format
@@ -61,6 +62,7 @@ jobs:
     steps:
       - name: Use published action from marketplace
         uses: fuad-daoud/release-aur@main
+        id: release-aur
         with:
           cli_name: example-cli
           maintainers: "Example User <user@example.com>"
@@ -78,7 +80,7 @@ jobs:
       - name: Display generated PKGBUILD
         run: |
           echo "=== Generated PKGBUILD from Published Action ==="
-          cat output/PKGBUILD
+          cat ${{ steps.release-aciton.outputs.pkgbuild_path }}
           echo "================================================"
 
       - name: Validate PKGBUILD content
@@ -146,6 +148,7 @@ jobs:
 
     steps:
       - name: Use published action from marketplace
+        id: release-aur
         uses: fuad-daoud/release-aur@main
         with:
           cli_name: example-cli
@@ -164,7 +167,7 @@ jobs:
       - name: Display generated PKGBUILD
         run: |
           echo "=== Generated PKGBUILD from Published Action ==="
-          cat output/PKGBUILD
+          cat ${{ steps.release-aciton.outputs.pkgbuild_path }}
           echo "================================================"
 
       - name: Validate PKGBUILD content
