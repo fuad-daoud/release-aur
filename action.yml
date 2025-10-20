@@ -113,10 +113,10 @@ runs:
         output_path: ${{ github.workspace }}/${{ inputs.output_path }}
       run: |
         ./build-pkgbuild
-        echo "pkgbuild_path=${{ inputs.output_path }}" >> $GITHUB_OUTPUT
+        echo "pkgbuild_path=${{ github.workspace }}/${{ inputs.output_path }}" >> $GITHUB_OUTPUT
 
     - name: Display generated PKGBUILD
       shell: bash
       run: |
         echo "Generated PKGBUILD:"
-        cat ${{ inputs.output_path }}
+        cat ${{ steps.generate.outputs.pkgbuild_path }}
