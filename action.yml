@@ -109,14 +109,8 @@ runs:
         conflicts: ${{ inputs.conflicts }}
         source_x86_64: ${{ inputs.source_x86_64 }}
         source_aarch64: ${{ inputs.source_aarch64 }}
-        pkgbuild_template: ${{ github.action_path }}${{ inputs.pkgbuild_template }}
+        pkgbuild_template: ${{ github.action_path }}/${{ inputs.pkgbuild_template }}
         output_path: ${{ github.workspace }}/${{ inputs.output_path }}
       run: |
         ./build-pkgbuild
         echo "pkgbuild_path=${{ github.workspace }}/${{ inputs.output_path }}" >> $GITHUB_OUTPUT
-
-    - name: Display generated PKGBUILD
-      shell: bash
-      run: |
-        echo "Generated PKGBUILD:"
-        cat ${{ steps.generate.outputs.pkgbuild_path }}
