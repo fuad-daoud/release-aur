@@ -41,7 +41,7 @@ jobs:
 
       - name: Validate PKGBUILD format
         run: |
-          if ! grep -q "pkgname=pkgmate-bin" output/PKGBUILD; then
+          if ! grep -q "pkgname=pkgmate-bin" ${{ steps.release-aciton.outputs.pkgbuild_path }}; then
             echo "ERROR: pkgname not found"
             exit 1
           fi
