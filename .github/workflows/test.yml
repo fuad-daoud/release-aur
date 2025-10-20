@@ -43,7 +43,7 @@ jobs:
   test-local-action:
     name: Test Local Action (Pre-release)
     runs-on: ubuntu-latest
-    container: archlinux:latest
+    # container: archlinux:latest
     needs: [test]
 
     steps:
