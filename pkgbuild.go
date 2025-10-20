@@ -34,7 +34,7 @@ type PkgBuild struct {
 
 func NewPkgBuild() *PkgBuild {
 	return &PkgBuild{
-		client: NewAURClient(5 * time.Second),
+		client: NewAURClient(5 * time.Second, 5 * time.Second, 5),
 	}
 }
 func NewPkgBuildFromEnv() *PkgBuild {

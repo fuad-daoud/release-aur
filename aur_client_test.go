@@ -9,6 +9,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func DummyAURClient(server *httptest.Server) AURClient {
+	return AURClient{
+		base:   server.URL,
+		client: &http.Client{},
+		tries:  1,
+	}
+}
+
 func TestAURClient_fetchPKGBUILD(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		expectedContent := `pkgname=test
@@ -22,7 +30,7 @@ pkgrel=1`
 		}))
 		defer server.Close()
 
-		client := AURClient{base: server.URL}
+		client := DummyAURClient(server)
 		result, err := client.fetchPKGBUILD("test-pkg")
 
 		assert.NoError(t, err)
@@ -35,7 +43,7 @@ pkgrel=1`
 		}))
 		defer server.Close()
 
-		client := AURClient{base: server.URL}
+		client := DummyAURClient(server)
 		_, err := client.fetchPKGBUILD("nonexistent")
 
 		assert.Error(t, err)
@@ -48,7 +56,7 @@ pkgrel=1`
 		}))
 		defer server.Close()
 
-		client := AURClient{base: server.URL}
+		client := DummyAURClient(server)
 		_, err := client.fetchPKGBUILD("test-pkg")
 
 		assert.Error(t, err)
@@ -65,7 +73,7 @@ func TestAURClient_getAurPackageVersions(t *testing.T) {
 		}))
 		defer server.Close()
 
-		client := AURClient{base: server.URL}
+		client := DummyAURClient(server)
 		result, err := client.getAurPackageVersions("test-pkg")
 
 		assert.NoError(t, err)
@@ -79,7 +87,7 @@ func TestAURClient_getAurPackageVersions(t *testing.T) {
 		}))
 		defer server.Close()
 
-		client := AURClient{base: server.URL}
+		client := DummyAURClient(server)
 		_, err := client.getAurPackageVersions("test-pkg")
 
 		assert.Error(t, err)
@@ -93,7 +101,7 @@ func TestAURClient_getAurPackageVersions(t *testing.T) {
 		}))
 		defer server.Close()
 
-		client := AURClient{base: server.URL}
+		client := DummyAURClient(server)
 		_, err := client.getAurPackageVersions("test-pkg")
 
 		assert.Error(t, err)
@@ -107,7 +115,7 @@ func TestAURClient_getAurPackageVersions(t *testing.T) {
 		}))
 		defer server.Close()
 
-		client := AURClient{base: server.URL}
+		client := DummyAURClient(server)
 		data, err := client.getAurPackageVersions("nonexistent")
 		assert.NoError(t, err)
 		assert.True(t, data.new)
@@ -120,7 +128,7 @@ func TestAURClient_getAurPackageVersions(t *testing.T) {
 		}))
 		defer server.Close()
 
-		client := AURClient{base: server.URL}
+		client := DummyAURClient(server)
 		_, err := client.getAurPackageVersions("test")
 
 		assert.Error(t, err)
@@ -134,22 +142,42 @@ func TestAURClient_getAurPackageVersions(t *testing.T) {
 		}))
 		defer server.Close()
 
-		client := AURClient{base: server.URL}
+		client := DummyAURClient(server)
 		_, err := client.getAurPackageVersions("test")
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "parse pkgRel")
 	})
 	t.Run("http.Get error in fetchPKGBUILD", func(t *testing.T) {
-		client := AURClient{base: "http://invalid-url-that-does-not-exist", client: &http.Client{Timeout: 100 * time.Millisecond}}
+		client := AURClient{base: "http://invalid-url-that-does-not-exist", client: &http.Client{Timeout: 100 * time.Millisecond}, tries: 1}
 		_, err := client.fetchPKGBUILD("test")
 
 		assert.Error(t, err)
 	})
 	t.Run("http.Get error in getAurPackageVersions", func(t *testing.T) {
-		client := AURClient{base: "http://invalid-url-that-does-not-exist", client: &http.Client{Timeout: 100 * time.Millisecond}}
+		client := AURClient{base: "http://invalid-url-that-does-not-exist", client: &http.Client{Timeout: 100 * time.Millisecond}, tries: 1}
 		_, err := client.getAurPackageVersions("test")
 
 		assert.Error(t, err)
+	})
+	t.Run("http.Get test multiple retries", func(t *testing.T) {
+		hits := 0
+		var expectedTries int
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			hits++
+			if hits < expectedTries {
+				w.WriteHeader(http.StatusServiceUnavailable)
+			} else {
+				w.WriteHeader(http.StatusOK)
+			}
+		}))
+		defer server.Close()
+		client := DummyAURClient(server)
+		client.tries = 5
+		expectedTries = client.tries
+		client.waitRetryDuration = 200 * time.Millisecond
+		_, err := client.get("")
+		assert.NoError(t, err)
+		assert.Equal(t, client.tries, hits)
 	})
 }

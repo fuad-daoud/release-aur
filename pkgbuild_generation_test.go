@@ -28,7 +28,7 @@ func TestGenerateNewVersion(t *testing.T) {
 
 		templatePath: "pkgbuild.tmpl",
 		outputPath:   "./output/PKGBUILD",
-		client:       NewAURClient(5 * time.Second),
+		client:       NewAURClient(5 * time.Second, 5 * time.Second, 5),
 	}
 	err := pkgbuild.validate()
 	if err != nil {
@@ -64,7 +64,7 @@ func TestGenerateNewPkgrel(t *testing.T) {
 
 		outputPath:   "./output/PKGBUILD",
 		templatePath: "pkgbuild.tmpl",
-		client:       NewAURClient(5 * time.Second),
+		client:       NewAURClient(5 * time.Second, 5 * time.Second, 5),
 	}
 	err := pkgbuild.validate()
 	if err != nil {
@@ -98,7 +98,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Licence:       []string{"MIT"},
 			Source_x86_64: []string{"test"},
 			templatePath:  "./nonexistent.tmpl",
-			client:        NewAURClient(5 * time.Second),
+			client:        NewAURClient(5*time.Second, time.Second, 1),
 		}
 
 		_, err := pkg.generate()
@@ -122,7 +122,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Licence:       []string{"MIT"},
 			Source_x86_64: []string{"test"},
 			templatePath:  "./pkgbuild.tmpl",
-			client:        AURClient{base: server.URL},
+			client:        DummyAURClient(server),
 		}
 
 		_, err := pkg.generate()
@@ -146,7 +146,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Source_x86_64: []string{"test"},
 			templatePath:  "./pkgbuild.tmpl",
 			outputPath:    "/tmp/PKGBUILD",
-			client:        AURClient{base: server.URL},
+			client:        DummyAURClient(server),
 		}
 
 		_, err := pkg.generate()
@@ -174,7 +174,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Licence:       []string{"MIT"},
 			Source_x86_64: []string{"test"},
 			templatePath:  "./pkgbuild.tmpl",
-			client:        AURClient{base: server.URL},
+			client:        DummyAURClient(server),
 			outputPath:    "/root/PKGBUILD",
 		}
 
@@ -208,7 +208,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Licence:       []string{"MIT"},
 			Source_x86_64: []string{"test"},
 			templatePath:  "./pkgbuild.tmpl",
-			client:        AURClient{base: server.URL},
+			client:        DummyAURClient(server),
 			outputPath:    "/root/PKGBUILD",
 		}
 
@@ -252,7 +252,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Licence:       []string{"MIT"},
 			Source_x86_64: []string{"test"},
 			templatePath:  "/tmp/pkgbuild.tmpl",
-			client:        AURClient{base: server.URL},
+			client:        DummyAURClient(server),
 			outputPath:    "/root/PKGBUILD",
 		}
 
@@ -282,7 +282,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Licence:       []string{"MIT"},
 			Source_x86_64: []string{"test"},
 			templatePath:  "pkgbuild.tmpl",
-			client:        AURClient{base: server.URL},
+			client:        DummyAURClient(server),
 			outputPath:    "/root/PKGBUILD",
 		}
 

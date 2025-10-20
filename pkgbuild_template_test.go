@@ -41,6 +41,7 @@ func TestTemplate(t *testing.T) {
 	assert.EqualValuesf(t, string(expected), buf, "Failed Templating")
 }
 
+
 func TestX86Only(t *testing.T) {
 	data := PkgBuild{
 		CliName:       "pkg",
