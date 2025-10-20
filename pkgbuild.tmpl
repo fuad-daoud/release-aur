@@ -9,9 +9,7 @@ pkgname={{ .Pkgname }}
 pkgver={{ .Version  }}
 pkgrel={{ .Pkgrel  }}
 pkgdesc="{{ .Description }}"
-arch=({{- range .Arch -}}
-'{{- . -}}' 
-{{- end }})
+arch=({{ join_quoted .Arch " " }})
 url="{{ .Url  }}"
 source_x86_64=(
 {{ range .Source_x86_64 -}}
