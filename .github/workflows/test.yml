@@ -85,32 +85,8 @@ jobs:
         with:
           name: local-pkgbuild
           path: ${{ steps.release.action.outputs.pkgbuild_path }}PKGBUILD
-
-
-
-      - name: Install makepkg (if needed)
-        run: |
-          if ! command -v makepkg &> /dev/null; then
-            echo "Installing pacman for makepkg..."
-            sudo apt-get update
-            sudo apt-get install -y pacman
-          fi
-
-      - name: Validate .SRCINFO using makepkg
-        run: |
-          cd ${{ steps.release.action.outputs.pkgbuild_path }}
-          
-          echo "=== Generating .SRCINFO from PKGBUILD using makepkg ==="
-          makepkg --printsrcinfo > .SRCINFO.makepkg
-          
-          echo "=== Comparing generated .SRCINFO with makepkg output ==="
-          if diff -u .SRCINFO .SRCINFO.makepkg; then
-            echo "✓ .SRCINFO matches makepkg output"
-          else
-            echo "✗ .SRCINFO differs from makepkg output"
-            echo "=== Your generated .SRCINFO ==="
-            cat .SRCINFO
-            echo "=== makepkg generated .SRCINFO ==="
-            cat .SRCINFO.makepkg
-            exit 1
-          fi
+      - name: Validate with makepkg
+        uses: docker://archlinux:latest
+        with:
+          entrypoint: /bin/bash
+          args: -c "pacman -Sy --noconfirm base-devel && cd ${{ steps.release-aciton.outputs.pkgbuild_path }} && makepkg --printsrcinfo | diff -u .SRCINFO -"
