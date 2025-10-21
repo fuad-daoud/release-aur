@@ -87,7 +87,7 @@ jobs:
           path: ${{ steps.release.action.outputs.pkgbuild_path }}PKGBUILD
       - name: Validate with makepkg
         run: |
-          docker run --rm -v ${{ steps.release-aciton.outputs.pkgbuild_path }}:/workspace archlinux:latest bash -c '
+          docker run --rm -v ${{ steps.release-action.outputs.pkgbuild_path }}:/workspace archlinux:latest bash -c '
             # Install base-devel for makepkg
             pacman -Sy --noconfirm base-devel
 
