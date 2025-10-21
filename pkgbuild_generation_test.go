@@ -149,7 +149,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Licence:              []string{"MIT"},
 			Source_x86_64:        []string{"test"},
 			pkgbuildTemplatePath: "./pkgbuild.tmpl",
-		srcInfoTemplatePath:  "srcinfo.tmpl",
+			srcInfoTemplatePath:  "srcinfo.tmpl",
 			outputPath:           "/tmp/",
 			client:               DummyAURClient(server),
 		}
@@ -179,7 +179,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Licence:              []string{"MIT"},
 			Source_x86_64:        []string{"test"},
 			pkgbuildTemplatePath: "./pkgbuild.tmpl",
-		srcInfoTemplatePath:  "srcinfo.tmpl",
+			srcInfoTemplatePath:  "srcinfo.tmpl",
 			client:               DummyAURClient(server),
 			outputPath:           "/root/",
 		}
@@ -214,7 +214,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Licence:              []string{"MIT"},
 			Source_x86_64:        []string{"test"},
 			pkgbuildTemplatePath: "./pkgbuild.tmpl",
-		srcInfoTemplatePath:  "srcinfo.tmpl",
+			srcInfoTemplatePath:  "srcinfo.tmpl",
 			client:               DummyAURClient(server),
 			outputPath:           "/root/",
 		}
@@ -259,7 +259,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Licence:              []string{"MIT"},
 			Source_x86_64:        []string{"test"},
 			pkgbuildTemplatePath: "/tmp/pkgbuild.tmpl",
-		srcInfoTemplatePath:  "srcinfo.tmpl",
+			srcInfoTemplatePath:  "srcinfo.tmpl",
 			client:               DummyAURClient(server),
 			outputPath:           "/root/",
 		}
@@ -290,7 +290,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Licence:              []string{"MIT"},
 			Source_x86_64:        []string{"test"},
 			pkgbuildTemplatePath: "pkgbuild.tmpl",
-		srcInfoTemplatePath:  "srcinfo.tmpl",
+			srcInfoTemplatePath:  "srcinfo.tmpl",
 			client:               DummyAURClient(server),
 			outputPath:           "/root/",
 		}
