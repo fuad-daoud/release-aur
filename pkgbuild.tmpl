@@ -11,6 +11,9 @@ pkgrel={{ .Pkgrel  }}
 pkgdesc="{{ .Description }}"
 arch=({{ join_quoted .Arch " " }})
 url="{{ .Url  }}"
+license=({{ join_quoted .Licence " " }})
+provides=({{ join_quoted .Provides " " }})
+conflicts=({{ join_quoted .Conflicts " " }})
 source_x86_64=(
 {{ range .Source_x86_64 -}}
 "{{ . }}"

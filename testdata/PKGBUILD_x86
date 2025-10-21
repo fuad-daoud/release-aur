@@ -9,8 +9,11 @@ pkgname=pkg-bin
 pkgver=0.1.4
 pkgrel=1
 pkgdesc="Some single line description"
-arch=('x86_64' 'aarch_64')
+arch=('x86_64' 'aarch64')
 url="https://github.com/fuad-daoud/pkg"
+license=('MIT' 'OBSD')
+provides=('package-a' 'package-b')
+conflicts=('package-c' 'package-d')
 source_x86_64=(
 "pkg-bin-0.1.4-x86_64::https://github.com/fuad-daoud/pkg/releases/download/v0.1.4/prayers-linux-x86_64"
 "LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkg/v0.1.4/LICENSE"

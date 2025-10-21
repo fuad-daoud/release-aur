@@ -26,9 +26,10 @@ func TestGenerateNewVersion(t *testing.T) {
 		Licence:       []string{"MIT"},
 		Source_x86_64: []string{"pkgmate-bin-100.0.0-x86_64::https://github.com/fuad-daoud/pkgmate/releases/download/100.0.0/pkgmate-linux-amd64", "LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v100.0.0/LICENSE", "README::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v100.0.0/README.md"},
 
-		templatePath: "pkgbuild.tmpl",
-		outputPath:   "./output/PKGBUILD",
-		client:       NewAURClient(5 * time.Second, 5 * time.Second, 5),
+		pkgbuildTemplatePath: "pkgbuild.tmpl",
+		srcInfoTemplatePath:  "srcinfo.tmpl",
+		outputPath:           "./output/",
+		client:               NewAURClient(5*time.Second, 5*time.Second, 5),
 	}
 	err := pkgbuild.validate()
 	if err != nil {
@@ -62,9 +63,10 @@ func TestGenerateNewPkgrel(t *testing.T) {
 		Licence:       []string{"MIT"},
 		Source_x86_64: []string{"pkgmate-bin-0.1.1-x86_64::https://github.com/fuad-daoud/pkgmate/releases/download/0.1.1/pkgmate-linux-amd64", "LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v0.1.1/LICENSE", "README::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v0.1.1/README.md"},
 
-		outputPath:   "./output/PKGBUILD",
-		templatePath: "pkgbuild.tmpl",
-		client:       NewAURClient(5 * time.Second, 5 * time.Second, 5),
+		outputPath:           "./output/",
+		pkgbuildTemplatePath: "pkgbuild.tmpl",
+		srcInfoTemplatePath:  "srcinfo.tmpl",
+		client:               NewAURClient(5*time.Second, 5*time.Second, 5),
 	}
 	err := pkgbuild.validate()
 	if err != nil {
@@ -88,17 +90,18 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 
 	t.Run("template fails", func(t *testing.T) {
 		pkg := &PkgBuild{
-			CliName:       "test",
-			Maintainers:   []string{"User"},
-			Pkgname:       "test",
-			Version:       "1.0.0",
-			Description:   "Test",
-			Url:           "https://example.com",
-			Arch:          []string{"x86_64"},
-			Licence:       []string{"MIT"},
-			Source_x86_64: []string{"test"},
-			templatePath:  "./nonexistent.tmpl",
-			client:        NewAURClient(5*time.Second, time.Second, 1),
+			CliName:              "test",
+			Maintainers:          []string{"User"},
+			Pkgname:              "test",
+			Version:              "1.0.0",
+			Description:          "Test",
+			Url:                  "https://example.com",
+			Arch:                 []string{"x86_64"},
+			Licence:              []string{"MIT"},
+			Source_x86_64:        []string{"test"},
+			pkgbuildTemplatePath: "./nonexistent.tmpl",
+			srcInfoTemplatePath:  "srcinfo.tmpl",
+			client:               NewAURClient(5*time.Second, time.Second, 1),
 		}
 
 		_, err := pkg.generate()
@@ -112,17 +115,18 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 		defer server.Close()
 
 		pkg := &PkgBuild{
-			CliName:       "test",
-			Maintainers:   []string{"User"},
-			Pkgname:       "test",
-			Version:       "1.0.0",
-			Description:   "Test",
-			Url:           "https://example.com",
-			Arch:          []string{"x86_64"},
-			Licence:       []string{"MIT"},
-			Source_x86_64: []string{"test"},
-			templatePath:  "./pkgbuild.tmpl",
-			client:        DummyAURClient(server),
+			CliName:              "test",
+			Maintainers:          []string{"User"},
+			Pkgname:              "test",
+			Version:              "1.0.0",
+			Description:          "Test",
+			Url:                  "https://example.com",
+			Arch:                 []string{"x86_64"},
+			Licence:              []string{"MIT"},
+			Source_x86_64:        []string{"test"},
+			pkgbuildTemplatePath: "./pkgbuild.tmpl",
+			srcInfoTemplatePath:  "srcinfo.tmpl",
+			client:               DummyAURClient(server),
 		}
 
 		_, err := pkg.generate()
@@ -135,18 +139,19 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 		defer server.Close()
 
 		pkg := &PkgBuild{
-			CliName:       "test",
-			Maintainers:   []string{"User"},
-			Pkgname:       "test",
-			Version:       "1.0.0",
-			Description:   "Test",
-			Url:           "https://example.com",
-			Arch:          []string{"x86_64"},
-			Licence:       []string{"MIT"},
-			Source_x86_64: []string{"test"},
-			templatePath:  "./pkgbuild.tmpl",
-			outputPath:    "/tmp/PKGBUILD",
-			client:        DummyAURClient(server),
+			CliName:              "test",
+			Maintainers:          []string{"User"},
+			Pkgname:              "test",
+			Version:              "1.0.0",
+			Description:          "Test",
+			Url:                  "https://example.com",
+			Arch:                 []string{"x86_64"},
+			Licence:              []string{"MIT"},
+			Source_x86_64:        []string{"test"},
+			pkgbuildTemplatePath: "./pkgbuild.tmpl",
+			srcInfoTemplatePath:  "srcinfo.tmpl",
+			outputPath:           "/tmp/",
+			client:               DummyAURClient(server),
 		}
 
 		_, err := pkg.generate()
@@ -164,18 +169,19 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 		defer server.Close()
 
 		pkg := &PkgBuild{
-			CliName:       "test",
-			Maintainers:   []string{"User"},
-			Pkgname:       "test",
-			Version:       "1.0.0",
-			Description:   "Test",
-			Url:           "https://example.com",
-			Arch:          []string{"x86_64"},
-			Licence:       []string{"MIT"},
-			Source_x86_64: []string{"test"},
-			templatePath:  "./pkgbuild.tmpl",
-			client:        DummyAURClient(server),
-			outputPath:    "/root/PKGBUILD",
+			CliName:              "test",
+			Maintainers:          []string{"User"},
+			Pkgname:              "test",
+			Version:              "1.0.0",
+			Description:          "Test",
+			Url:                  "https://example.com",
+			Arch:                 []string{"x86_64"},
+			Licence:              []string{"MIT"},
+			Source_x86_64:        []string{"test"},
+			pkgbuildTemplatePath: "./pkgbuild.tmpl",
+			srcInfoTemplatePath:  "srcinfo.tmpl",
+			client:               DummyAURClient(server),
+			outputPath:           "/root/",
 		}
 
 		_, err := pkg.generate()
@@ -198,18 +204,19 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 		defer server.Close()
 
 		pkg := &PkgBuild{
-			CliName:       "test",
-			Maintainers:   []string{"User"},
-			Pkgname:       "test",
-			Version:       "1.0.0",
-			Description:   "Test",
-			Url:           "https://example.com",
-			Arch:          []string{"x86_64"},
-			Licence:       []string{"MIT"},
-			Source_x86_64: []string{"test"},
-			templatePath:  "./pkgbuild.tmpl",
-			client:        DummyAURClient(server),
-			outputPath:    "/root/PKGBUILD",
+			CliName:              "test",
+			Maintainers:          []string{"User"},
+			Pkgname:              "test",
+			Version:              "1.0.0",
+			Description:          "Test",
+			Url:                  "https://example.com",
+			Arch:                 []string{"x86_64"},
+			Licence:              []string{"MIT"},
+			Source_x86_64:        []string{"test"},
+			pkgbuildTemplatePath: "./pkgbuild.tmpl",
+			srcInfoTemplatePath:  "srcinfo.tmpl",
+			client:               DummyAURClient(server),
+			outputPath:           "/root/",
 		}
 
 		PKGBUILD, err := pkg.generate()
@@ -242,18 +249,19 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 		}
 
 		pkg := &PkgBuild{
-			CliName:       "test",
-			Maintainers:   []string{"User"},
-			Pkgname:       "test",
-			Version:       "1.0.0",
-			Description:   "Test",
-			Url:           "https://example.com",
-			Arch:          []string{"x86_64"},
-			Licence:       []string{"MIT"},
-			Source_x86_64: []string{"test"},
-			templatePath:  "/tmp/pkgbuild.tmpl",
-			client:        DummyAURClient(server),
-			outputPath:    "/root/PKGBUILD",
+			CliName:              "test",
+			Maintainers:          []string{"User"},
+			Pkgname:              "test",
+			Version:              "1.0.0",
+			Description:          "Test",
+			Url:                  "https://example.com",
+			Arch:                 []string{"x86_64"},
+			Licence:              []string{"MIT"},
+			Source_x86_64:        []string{"test"},
+			pkgbuildTemplatePath: "/tmp/pkgbuild.tmpl",
+			srcInfoTemplatePath:  "srcinfo.tmpl",
+			client:               DummyAURClient(server),
+			outputPath:           "/root/",
 		}
 
 		_, err = pkg.generate()
@@ -272,18 +280,19 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			}
 		}))
 		pkg := &PkgBuild{
-			CliName:       "test",
-			Maintainers:   []string{"User"},
-			Pkgname:       "test",
-			Version:       "1.0.0",
-			Description:   "Test",
-			Url:           "https://example.com",
-			Arch:          []string{"x86_64"},
-			Licence:       []string{"MIT"},
-			Source_x86_64: []string{"test"},
-			templatePath:  "pkgbuild.tmpl",
-			client:        DummyAURClient(server),
-			outputPath:    "/root/PKGBUILD",
+			CliName:              "test",
+			Maintainers:          []string{"User"},
+			Pkgname:              "test",
+			Version:              "1.0.0",
+			Description:          "Test",
+			Url:                  "https://example.com",
+			Arch:                 []string{"x86_64"},
+			Licence:              []string{"MIT"},
+			Source_x86_64:        []string{"test"},
+			pkgbuildTemplatePath: "pkgbuild.tmpl",
+			srcInfoTemplatePath:  "srcinfo.tmpl",
+			client:               DummyAURClient(server),
+			outputPath:           "/root/",
 		}
 
 		_, err := pkg.generate()

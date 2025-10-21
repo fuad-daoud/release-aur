@@ -50,7 +50,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Use local action
-        id: release-aciton
+        id: release-action
         uses: ./
         with:
           cli_name: pkgmate
@@ -63,15 +63,18 @@ jobs:
           licence: "MIT"
           source_x86_64: "pkgmate-bin-0.1.1-x86_64::https://github.com/fuad-daoud/pkgmate/releases/download/0.1.1/pkgmate-linux-amd64"
 
-      - name: Display generated PKGBUILD
+      - name: Display generated PKGBUILD and .SRCINFO
         run: |
           echo "=== Generated PKGBUILD ==="
-          cat ${{ steps.release-aciton.outputs.pkgbuild_path }}
+          cat ${{ steps.release.action.outputs.pkgbuild_path }}PKGBUILD
+          echo "=========================="
+          echo "=== Generated .SRCINFO ==="
+          cat ${{ steps.release.action.outputs.pkgbuild_path }}.SRCINFO
           echo "=========================="
 
       - name: Validate PKGBUILD format
         run: |
-          if ! grep -q "pkgname=pkgmate-bin" ${{ steps.release-aciton.outputs.pkgbuild_path }}; then
+          if ! grep -q "pkgname=pkgmate-bin" ${{ steps.release.action.outputs.pkgbuild_path }}PKGBUILD; then
             echo "ERROR: pkgname not found"
             exit 1
           fi
@@ -81,4 +84,38 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: local-pkgbuild
-          path: ${{ steps.release-aciton.outputs.pkgbuild_path }}
+          path: ${{ steps.release.action.outputs.pkgbuild_path }}PKGBUILD
+      - name: Validate with makepkg
+        run: |
+          docker run --rm -v ${{ steps.release-action.outputs.pkgbuild_path }}:/workspace archlinux:latest bash -c '
+            # Install base-devel for makepkg
+            pacman -Sy --noconfirm base-devel
+
+
+            # Create a non-root user for makepkg
+            useradd -m builder
+
+
+            # Copy files to builder home and set ownership
+            cp -r /workspace /home/builder/build
+            chown -R builder:builder /home/builder/build
+
+
+            # Run makepkg as builder user
+            cd /home/builder/build
+            su builder -c "makepkg --printsrcinfo" > .SRCINFO.makepkg
+
+
+            # Compare the files
+            echo "=== Comparing generated .SRCINFO with makepkg output ==="
+            if diff -u .SRCINFO .SRCINFO.makepkg; then
+              echo "✓ .SRCINFO matches makepkg output"
+            else
+              echo "✗ .SRCINFO differs from makepkg output"
+              echo "=== Your generated .SRCINFO ==="
+              cat .SRCINFO
+              echo "=== makepkg generated .SRCINFO ==="
+              cat .SRCINFO.makepkg
+              exit 1
+             fi
+           '

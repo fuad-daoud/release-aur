@@ -8,6 +8,9 @@ pkgrel=2
 pkgdesc="TUI application to manage your dependencies"
 arch=('x86_64')
 url="https://github.com/fuad-daoud/pkgmate"
+license=('MIT')
+provides=()
+conflicts=()
 source_x86_64=(
 "pkgmate-bin-0.1.1-x86_64::https://github.com/fuad-daoud/pkgmate/releases/download/0.1.1/pkgmate-linux-amd64"
 "LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v0.1.1/LICENSE"
