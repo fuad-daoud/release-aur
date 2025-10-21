@@ -89,4 +89,10 @@ jobs:
         uses: docker://archlinux:latest
         with:
           entrypoint: /bin/bash
-          args: -c "pacman -Sy --noconfirm base-devel && cd ${{ steps.release-aciton.outputs.pkgbuild_path }} && makepkg --printsrcinfo | diff -u .SRCINFO -"
+          args: -c "
+             pacman -Sy --noconfirm base-devel &&
+             useradd -m builder &&
+             cp -r ${{ steps.release-aciton.outputs.pkgbuild_path }} /home/builder/build &&
+             chown -R builder:builder /home/builder/build &&
+             su - builder -c 'cd /home/builder/build && makepkg --printsrcinfo' | diff -u ${{ steps.release-aciton.outputs.pkgbuild_path }}/.SRCINFO -
+           "
