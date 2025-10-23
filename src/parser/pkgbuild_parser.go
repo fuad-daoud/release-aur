@@ -94,6 +94,6 @@ func ComparePKGBUILDs(content1, content2 string) bool {
 	slog.Info("Removing check sums and pkgrel to compare ...")
 	norm1 := NormalizePKGBUILD(content1)
 	norm2 := NormalizePKGBUILD(content2)
-	slog.Info("Removed from both files comparing ...")
+	slog.Info("Removed from both files, comparing ...")
 	return norm1 == norm2
 }

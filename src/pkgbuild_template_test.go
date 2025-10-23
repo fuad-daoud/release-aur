@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -33,7 +32,7 @@ func TestTemplate(t *testing.T) {
 				Source_x86_64:        []string{"pkg-bin-0.1.4-x86_64::https://github.com/fuad-daoud/pkg/releases/download/v0.1.4/prayers-linux-x86_64", "LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkg/v0.1.4/LICENSE", "README::https://raw.githubusercontent.com/fuad-daoud/pkg/v0.1.4/README.md"},
 				Source_aarch64:       []string{"pkg-bin-0.1.4-aarch_64::https://github.com/fuad-daoud/pkg/releases/download/v0.1.4/prayers-linux-aarch_64", "LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkg/v0.1.4/LICENSE", "README::https://raw.githubusercontent.com/fuad-daoud/pkg/v0.1.4/README.md"},
 				Checksum_x86_64:      []string{"ce9b515fd45526ac641d7bcf8520f58a72dc82d8109cfe3b317484cd837c5cec", "ce9b515fd45526ac641d7bcf8520f58a72dc82d8109cfe3b317484cd837c5cec", "ce9b515fd45526ac641d7bcf8520f58a72dc82d8109cfe3b317484cd837c5cec"},
-				Checksum_aarch64: []string{"SKIP"},
+				Checksum_aarch64:     []string{"SKIP"},
 				pkgbuildTemplatePath: "pkgbuild.tmpl",
 				srcInfoTemplatePath:  "srcinfo.tmpl",
 			},
@@ -72,7 +71,6 @@ func TestTemplate(t *testing.T) {
 			assert.NoError(t, err)
 			expectedPKGBUILD, _ := os.ReadFile(tt.expectedPKGBUILD)
 			expectedSRCINFO, _ := os.ReadFile(tt.expectedSRCINFO)
-			fmt.Printf("pkgbuild: %v\n", pkgbuild)
 			assert.EqualValuesf(t, string(expectedPKGBUILD), pkgbuild, "Failed Templating")
 			assert.EqualValuesf(t, string(expectedSRCINFO), srcinfo, "Failed Templating")
 		})

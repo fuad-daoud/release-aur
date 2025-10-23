@@ -60,36 +60,48 @@ func defaultCompareWithRemote(client Client, pkgbuild PkgBuild, PKGBUILD string)
 			slog.Error("Failed to fetch PKGBUILD from AUR")
 			return -1, err
 		}
-		remoteChecksums, err := parser.ExtractChecksums(PKGBUILD)
-
-		if err != nil {
-			slog.Error("Failed to fetch PKGBUILD from AUR")
-			return -1, err
-		}
 		if parser.ComparePKGBUILDs(PKGBUILD, aurPKGBUILD) {
 			slog.Error("Files match!! should not publish to the AUR without changes to PKGBUILD file or the software Version")
 			return -1, fmt.Errorf("PKGBUILD already published to AUR")
 		}
 
-		if len(pkgbuild.Checksum_aarch64)+len(pkgbuild.Checksum_x86_64) != len(remoteChecksums) {
-			slog.Error("Checksums differ!! should not increament the pkgrel with new sources")
-			return -1, fmt.Errorf("Old version new checksums")
+		remoteChecksums, err := parser.ExtractChecksums(aurPKGBUILD)
+
+		if err != nil {
+			slog.Error("Failed extact remote checksums")
+			return -1, err
 		}
-		for _, local := range pkgbuild.Checksum_aarch64 {
-			found := slices.Contains(remoteChecksums["aarch64"], local)
-			if !found {
+
+		fmt.Printf("remoteChecksums: %v\n", remoteChecksums)
+		if len(remoteChecksums["x86_64"]) != 0 && remoteChecksums["x86_64"][0] != "SKIP" {
+
+			if len(pkgbuild.Checksum_x86_64) != len(remoteChecksums["x86_64"]) {
 				slog.Error("Checksums differ!! should not increament the pkgrel with new sources")
-				return -1, fmt.Errorf("Old version new checksums")
+				return -1, fmt.Errorf("different number of x86_64 checksums")
+			}
+
+			for _, local := range pkgbuild.Checksum_x86_64 {
+				found := slices.Contains(remoteChecksums["x86_64"], local)
+				if !found {
+					slog.Error("Checksums differ!! should not increament the pkgrel with new sources")
+					return -1, fmt.Errorf("different x86_64 checksums")
+				}
+			}
+		}
+		if len(remoteChecksums["aarch64"]) != 0 && remoteChecksums["aarch64"][0] != "SKIP" {
+			if len(pkgbuild.Checksum_aarch64) != len(remoteChecksums["aarch64"]) {
+				slog.Error("Checksums differ!! should not increament the pkgrel with new sources")
+				return -1, fmt.Errorf("different number of aarch64 checksums")
+			}
+			for _, local := range pkgbuild.Checksum_aarch64 {
+				found := slices.Contains(remoteChecksums["aarch64"], local)
+				if !found {
+					slog.Error("Checksums differ!! should not increament the pkgrel with new sources")
+					return -1, fmt.Errorf("different aarch64 checksums")
+				}
 			}
 		}
 
-		for _, local := range pkgbuild.Checksum_x86_64 {
-			found := slices.Contains(remoteChecksums["x86_64"], local)
-			if !found {
-				slog.Error("Checksums differ!! should not increament the pkgrel with new sources")
-				return -1, fmt.Errorf("Old version new checksums")
-			}
-		}
 		return data.pkgrel, nil
 	}
 	if data.new {
