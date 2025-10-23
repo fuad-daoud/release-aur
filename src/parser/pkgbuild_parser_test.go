@@ -244,7 +244,7 @@ package() {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := normalizePKGBUILD(tt.input)
+			result := NormalizePKGBUILD(tt.input)
 			assert.EqualValuesf(t, tt.expected, result, "Failed Normalizing")
 		})
 	}
