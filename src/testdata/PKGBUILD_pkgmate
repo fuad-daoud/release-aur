@@ -3,7 +3,7 @@
 
 
 pkgname=pkgmate-bin
-pkgver=100.0.0
+pkgver=v0.0.0-test-release-aur
 pkgrel=1
 pkgdesc="TUI application to manage your dependencies"
 arch=('x86_64')
@@ -12,11 +12,13 @@ license=('MIT')
 provides=()
 conflicts=()
 source_x86_64=(
-"pkgmate-bin-100.0.0-x86_64::https://github.com/fuad-daoud/pkgmate/releases/download/100.0.0/pkgmate-linux-amd64"
-"LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v100.0.0/LICENSE"
-"README::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v100.0.0/README.md"
+"pkgmate-bin-v0.0.0-test-release-aur-x86_64::https://github.com/fuad-daoud/pkgmate/releases/download/v0.0.0-test-release-aur/pkgmate-linux-amd64"
 )
-sha256sums_x86_64=('SKIP')
+
+sha256sums_x86_64=(
+'ce9b515fd45526ac641d7bcf8520f58a72dc82d8109cfe3b317484cd837c5cec'
+)
+
 
 package() {
     if [ "$CARCH" = "x86_64" ]; then

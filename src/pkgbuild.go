@@ -9,33 +9,39 @@ import (
 	"strings"
 	"text/template"
 	"time"
+
+	"github.com/fuad-daoud/release-aur/src/parser"
 )
 
 type PkgBuild struct {
-	CliName        string
-	Maintainers    []string
-	Contributors   []string
-	Pkgname        string
-	Version        string
-	Pkgrel         int
-	Description    string
-	Url            string
-	Arch           []string
-	Licence        []string
-	Provides       []string
-	Conflicts      []string
-	Source_x86_64  []string
-	Source_aarch64 []string
+	CliName          string
+	Maintainers      []string
+	Contributors     []string
+	Pkgname          string
+	Version          string
+	Pkgrel           int
+	Description      string
+	Url              string
+	Arch             []string
+	Licence          []string
+	Provides         []string
+	Conflicts        []string
+	Source_x86_64    []string
+	Checksum_x86_64  []string
+	Source_aarch64   []string
+	Checksum_aarch64 []string
 
 	pkgbuildTemplatePath string
 	srcInfoTemplatePath  string
 	outputPath           string
-	client               AURClient
+	comparator           compareWithRemote
+	checksumCalculator   parser.CalculateSources
 }
 
 func NewPkgBuild() *PkgBuild {
 	return &PkgBuild{
-		client: NewAURClient(5*time.Second, 5*time.Second, 5),
+		comparator:         defaultCompareWithRemote,
+		checksumCalculator: parser.DefaultCalculateSources,
 	}
 }
 func NewPkgBuildFromEnv() *PkgBuild {
@@ -87,68 +93,32 @@ func getenv(key, fallback string) string {
 	return value
 }
 
-func (p *PkgBuild) validate() error {
-	slog.Info("Validating", "pkgbuild", p)
-	if p.CliName == "" {
-		return fmt.Errorf("CliName is required")
-	}
-	if len(p.Maintainers) == 0 {
-		return fmt.Errorf("At least one Maintainer is required")
-	}
-	if p.Pkgname == "" {
-		return fmt.Errorf("Pkgname is required")
-	}
-	if p.Version == "" {
-		return fmt.Errorf("Version is required")
-	}
-	if p.Description == "" {
-		return fmt.Errorf("Description is required")
-	}
-	if p.Url == "" {
-		return fmt.Errorf("Url is required")
-	}
-	if len(p.Arch) == 0 {
-		return fmt.Errorf("At least one Arch is required")
-	}
-	if len(p.Licence) == 0 {
-		return fmt.Errorf("At least one Licence is required")
-	}
-	if len(p.Source_x86_64) == 0 {
-		return fmt.Errorf("Source_x86_64 is required")
-	}
-	slog.Info("Input is valid")
-	return nil
-}
-
 func (pkgbuild *PkgBuild) generate() (string, error) {
 	slog.Info("starting pkgbuild.generate ..")
+
+	client := NewClient(time.Second*30, time.Second*5, 5)
+	var err error
+	if pkgbuild.Checksum_x86_64, err = pkgbuild.checksumCalculator(client.Get, pkgbuild.Source_x86_64); err != nil {
+		return "", err
+	}
+
+	if pkgbuild.Checksum_aarch64, err = pkgbuild.checksumCalculator(client.Get, pkgbuild.Source_aarch64); err != nil {
+		return "", err
+	}
+
 	PKGBUILD, SRCINFO, err := pkgbuild.template()
 	if err != nil {
 		slog.Error("Failed to template PKGBUILD dumping\n ", "dump", pkgbuild)
 		return "", err
 	}
 
-	data, err := pkgbuild.client.getAurPackageVersions(pkgbuild.Pkgname)
-
+	remotePkgrel, err := pkgbuild.comparator(client, *pkgbuild, PKGBUILD)
 	if err != nil {
-		slog.Error("Failed to fetch package info from AUR")
 		return "", err
 	}
-
-	if data.new == false && data.version == pkgbuild.Version {
-		slog.Warn("AUR version and current version match, this should only be a PKGBUILD update")
-		slog.Info("Comparing PKGBUILD to validate")
-		aurPKGBUILD, err := pkgbuild.client.fetchPKGBUILD(pkgbuild.Pkgname)
-		if err != nil {
-			slog.Error("Failed to fetch PKGBUILD from AUR")
-			return "", err
-		}
-		if comparePKGBUILDs(PKGBUILD, aurPKGBUILD) {
-			slog.Error("Files match!! should not publish to the AUR without changes to PKGBUILD file or the software Version")
-			return "", fmt.Errorf("PKGBUILD already published to AUR")
-		}
-		slog.Info("New PKGBUILD file increasing pkgrel number to", "pkgrel", data.pkgrel+1)
-		pkgbuild.Pkgrel = data.pkgrel + 1
+	if remotePkgrel != -1 {
+		pkgbuild.Pkgrel = remotePkgrel + 1
+		slog.Info("New PKGBUILD file increasing pkgrel number to", "pkgrel", pkgbuild.Pkgrel)
 
 		slog.Info("Templating again")
 		PKGBUILD, SRCINFO, err = pkgbuild.template()
@@ -156,14 +126,7 @@ func (pkgbuild *PkgBuild) generate() (string, error) {
 			slog.Error("Failed to template PKGBUILD dumping\n ", "dump", pkgbuild)
 			return "", err
 		}
-	} else {
-		if data.new {
-			slog.Info("New package")
-		}
-		slog.Info("New version means reset pkgrel")
-		pkgbuild.Pkgrel = 1
 	}
-
 	if err := writeFile(pkgbuild.outputPath+"PKGBUILD", PKGBUILD); err != nil {
 		return "", err
 	}
@@ -228,12 +191,4 @@ func (pkgbuild PkgBuild) template() (string, string, error) {
 	}
 
 	return pkgbuildBuf.String(), srcinfoBuf.String(), nil
-}
-
-func comparePKGBUILDs(content1, content2 string) bool {
-	slog.Info("Removing check sums and pkgrel to compare ...")
-	norm1 := normalizePKGBUILD(content1)
-	norm2 := normalizePKGBUILD(content2)
-	slog.Info("Removed from both files comparing ...")
-	return norm1 == norm2
 }

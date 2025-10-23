@@ -11,15 +11,15 @@ import (
 	"time"
 )
 
-type AURClient struct {
+type Client struct {
 	base              string
 	client            *http.Client
 	tries             int
 	waitRetryDuration time.Duration
 }
 
-func NewAURClient(timeout, waitRetryDuration time.Duration, tries int) AURClient {
-	return AURClient{
+func NewClient(timeout, waitRetryDuration time.Duration, tries int) Client {
+	return Client{
 		base:              "https://aur.archlinux.org",
 		tries:             max(tries, 1),
 		waitRetryDuration: max(100*time.Millisecond, waitRetryDuration),
@@ -42,15 +42,15 @@ type AurData struct {
 	new     bool
 }
 
-func (client AURClient) get(path string) ([]byte, error) {
+func (client Client) Get(url string) ([]byte, error) {
 	if client.client == nil {
-		client.client = &http.Client{Timeout: 10 * time.Second}
+		client.client = &http.Client{Timeout: 30 * time.Second}
 	}
 
 	var resp *http.Response
 	var err error
 	for client.tries > 0 {
-		resp, err = client.client.Get(client.base + path)
+		resp, err = client.client.Get(url)
 
 		if err != nil {
 			return []byte{}, err
@@ -79,13 +79,17 @@ func (client AURClient) get(path string) ([]byte, error) {
 	return body, nil
 }
 
-func (client AURClient) fetchPKGBUILD(pkgName string) (string, error) {
-	body, err := client.get("/cgit/aur.git/plain/PKGBUILD?h=" + pkgName)
+func (client Client) getAur(path string) ([]byte, error) {
+	return client.Get(client.base + path)
+}
+
+func (client Client) fetchPKGBUILD(pkgName string) (string, error) {
+	body, err := client.getAur("/cgit/aur.git/plain/PKGBUILD?h=" + pkgName)
 	return string(body), err
 }
 
-func (client AURClient) getAurPackageVersions(pkgName string) (AurData, error) {
-	body, err := client.get("/rpc/?v=5&type=info&arg[]=" + pkgName)
+func (client Client) getAurPackageVersions(pkgName string) (AurData, error) {
+	body, err := client.getAur("/rpc/?v=5&type=info&arg[]=" + pkgName)
 	if err != nil {
 		return AurData{}, err
 	}

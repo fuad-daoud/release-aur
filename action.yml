@@ -66,12 +66,12 @@ inputs:
   pkgbuild_template:
     description: "Path to custom PKGBUILD template relative to the github action path"
     required: false
-    default: "pkgbuild.tmpl"
+    default: "src/pkgbuild.tmpl"
 
   srcinfo_template:
     description: "Path to custom .SRCINFO template relative to the github action path"
     required: false
-    default: "srcinfo.tmpl"
+    default: "src/srcinfo.tmpl"
 
   output_path:
     description: "Output path where the PKGBUILD will be generated relative to workspace root"
@@ -98,7 +98,7 @@ runs:
     - name: Build action
       shell: bash
       run: |
-        go build -C ${{ github.action_path }} -o $(pwd)/build-pkgbuild
+        go build -C ${{ github.action_path }}/src -o $(pwd)/build-pkgbuild
 
     - name: Generate PKGBUILD
       id: generate

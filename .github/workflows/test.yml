@@ -41,7 +41,7 @@ jobs:
           fi
 
   test-local-action:
-    name: Test Local Action (Pre-release)
+    name: Test Local Action
     runs-on: ubuntu-latest
     needs: [test]
 
