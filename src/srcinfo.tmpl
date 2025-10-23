@@ -21,17 +21,22 @@ pkgbase = {{ .Pkgname }}
 	conflicts = {{ . }}
 {{- end }}
 {{- end }}
+{{- if .Source_x86_64 }}
 {{- range .Source_x86_64 }}
 	source_x86_64 = {{ . }}
 {{- end }}
-{{- if .Source_x86_64 }}
-	sha256sums_x86_64 = SKIP
+{{- range .Checksum_x86_64 }}
+	sha256sums_x86_64 = {{ . }}
+{{- end}}
 {{- end }}
 {{- if .Source_aarch64 }}
 {{- range .Source_aarch64 }}
 	source_aarch64 = {{ . }}
 {{- end }}
-	sha256sums_aarch64 = SKIP
+
+{{- range .Checksum_aarch64 }}
+	sha256sums_aarch64 = {{ . }}
+{{- end}}
 {{- end }}
 
 pkgname = {{ .Pkgname }}

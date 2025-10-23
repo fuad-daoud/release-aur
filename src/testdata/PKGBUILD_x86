@@ -21,7 +21,9 @@ source_x86_64=(
 )
 
 sha256sums_x86_64=(
-'SKIP'
+'CHECKSUM1'
+'CHECKSUM2'
+'CHECKSUM3'
 )
 
 

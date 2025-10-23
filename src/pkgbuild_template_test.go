@@ -54,7 +54,7 @@ func TestTemplate(t *testing.T) {
 				Provides:        []string{"package-a", "package-b"},
 				Conflicts:       []string{"package-c", "package-d"},
 				Source_x86_64:   []string{"pkg-bin-0.1.4-x86_64::https://github.com/fuad-daoud/pkg/releases/download/v0.1.4/prayers-linux-x86_64", "LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkg/v0.1.4/LICENSE", "README::https://raw.githubusercontent.com/fuad-daoud/pkg/v0.1.4/README.md"},
-				Checksum_x86_64: []string{"SKIP"},
+				Checksum_x86_64: []string{"CHECKSUM1", "CHECKSUM2", "CHECKSUM3"},
 
 				pkgbuildTemplatePath: "pkgbuild.tmpl",
 				srcInfoTemplatePath:  "srcinfo.tmpl",
