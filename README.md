@@ -114,8 +114,8 @@ jobs:
 | `conflicts` | Comma-separated list of conflicting packages | No | `''` |
 | `source_x86_64` | Comma-separated list of x86_64 source URLs | Yes | - |
 | `source_aarch64` | Comma-separated list of aarch64 source URLs | No | `''` |
-| `pkgbuild_template` | Path to custom PKGBUILD template relative to the github action path | No | `pkgbuild.tmpl` |
-| `srcinfo_template` | Path to custom .SRCINFO template relative to the github action path | No | `srcinfo.tmpl` |
+| `pkgbuild_template` | Path to custom PKGBUILD template relative to the github action path | No | `src/pkgbuild.tmpl` |
+| `srcinfo_template` | Path to custom .SRCINFO template relative to the github action path | No | `src/srcinfo.tmpl` |
 | `output_path` | Output path where the PKGBUILD will be generated relative to workspace root | No | `PKGBUILD` |
 
 ## Outputs
