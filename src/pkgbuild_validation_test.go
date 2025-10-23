@@ -1,5 +1,3 @@
-//go:build template
-
 package main
 
 import (
