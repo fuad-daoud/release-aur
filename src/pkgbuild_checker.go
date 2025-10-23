@@ -9,7 +9,6 @@ import (
 )
 
 func validate(p PkgBuild) error {
-	slog.Info("Validating", "pkgbuild", p)
 	if p.CliName == "" {
 		return fmt.Errorf("CliName is required")
 	}
@@ -37,7 +36,6 @@ func validate(p PkgBuild) error {
 	if len(p.Source_x86_64) == 0 {
 		return fmt.Errorf("Source_x86_64 is required")
 	}
-	slog.Info("Input is valid")
 	return nil
 }
 
