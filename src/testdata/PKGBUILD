@@ -19,13 +19,22 @@ source_x86_64=(
 "LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkg/v0.1.4/LICENSE"
 "README::https://raw.githubusercontent.com/fuad-daoud/pkg/v0.1.4/README.md"
 )
+
+sha256sums_x86_64=(
+'ce9b515fd45526ac641d7bcf8520f58a72dc82d8109cfe3b317484cd837c5cec'
+'ce9b515fd45526ac641d7bcf8520f58a72dc82d8109cfe3b317484cd837c5cec'
+'ce9b515fd45526ac641d7bcf8520f58a72dc82d8109cfe3b317484cd837c5cec'
+)
 source_aarch64=(
 "pkg-bin-0.1.4-aarch_64::https://github.com/fuad-daoud/pkg/releases/download/v0.1.4/prayers-linux-aarch_64"
 "LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkg/v0.1.4/LICENSE"
 "README::https://raw.githubusercontent.com/fuad-daoud/pkg/v0.1.4/README.md"
 )
-sha256sums_x86_64=('SKIP')
-sha256sums_aarch64=('SKIP')
+
+sha256sums_aarch64=(
+'SKIP'
+)
+
 
 package() {
     if [ "$CARCH" = "x86_64" ]; then

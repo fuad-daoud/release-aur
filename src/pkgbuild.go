@@ -10,8 +10,6 @@ import (
 	"text/template"
 	"time"
 
-	"slices"
-
 	"github.com/fuad-daoud/release-aur/src/parser"
 )
 
@@ -29,19 +27,21 @@ type PkgBuild struct {
 	Provides         []string
 	Conflicts        []string
 	Source_x86_64    []string
-	checksum_x86_64  []string
+	Checksum_x86_64  []string
 	Source_aarch64   []string
-	checksum_aarch64 []string
+	Checksum_aarch64 []string
 
 	pkgbuildTemplatePath string
 	srcInfoTemplatePath  string
 	outputPath           string
-	client               Client
+	comparator           compareWithRemote
+	checksumCalculator   parser.CalculateSources
 }
 
 func NewPkgBuild() *PkgBuild {
 	return &PkgBuild{
-		client: NewClient(30*time.Second, 5*time.Second, 5),
+		comparator:         defaultCompareWithRemote,
+		checksumCalculator: parser.DefaultCalculateSources,
 	}
 }
 func NewPkgBuildFromEnv() *PkgBuild {
@@ -93,56 +93,17 @@ func getenv(key, fallback string) string {
 	return value
 }
 
-func (p *PkgBuild) validate() error {
-	slog.Info("Validating", "pkgbuild", p)
-	if p.CliName == "" {
-		return fmt.Errorf("CliName is required")
-	}
-	if len(p.Maintainers) == 0 {
-		return fmt.Errorf("At least one Maintainer is required")
-	}
-	if p.Pkgname == "" {
-		return fmt.Errorf("Pkgname is required")
-	}
-	if p.Version == "" {
-		return fmt.Errorf("Version is required")
-	}
-	if p.Description == "" {
-		return fmt.Errorf("Description is required")
-	}
-	if p.Url == "" {
-		return fmt.Errorf("Url is required")
-	}
-	if len(p.Arch) == 0 {
-		return fmt.Errorf("At least one Arch is required")
-	}
-	if len(p.Licence) == 0 {
-		return fmt.Errorf("At least one Licence is required")
-	}
-	if len(p.Source_x86_64) == 0 {
-		return fmt.Errorf("Source_x86_64 is required")
-	}
-	slog.Info("Input is valid")
-	return nil
-}
-
 func (pkgbuild *PkgBuild) generate() (string, error) {
 	slog.Info("starting pkgbuild.generate ..")
 
-	if len(pkgbuild.checksum_x86_64) == 0 {
-		checksum_x86_64, err := pkgbuild.calculateForSources(pkgbuild.Source_x86_64)
-		if err != nil {
-			return "", err
-		}
-		pkgbuild.checksum_x86_64 = checksum_x86_64
+	client := NewClient(time.Second*30, time.Second*5, 5)
+	var err error
+	if pkgbuild.Checksum_x86_64, err = pkgbuild.checksumCalculator(client.Get, pkgbuild.Source_x86_64); err != nil {
+		return "", err
 	}
 
-	if len(pkgbuild.checksum_aarch64) == 0 {
-		checksum_aarch64, err := pkgbuild.calculateForSources(pkgbuild.Source_aarch64)
-		if err != nil {
-			return "", err
-		}
-		pkgbuild.checksum_aarch64 = checksum_aarch64
+	if pkgbuild.Checksum_aarch64, err = pkgbuild.checksumCalculator(client.Get, pkgbuild.Source_aarch64); err != nil {
+		return "", err
 	}
 
 	PKGBUILD, SRCINFO, err := pkgbuild.template()
@@ -151,53 +112,13 @@ func (pkgbuild *PkgBuild) generate() (string, error) {
 		return "", err
 	}
 
-	data, err := pkgbuild.client.getAurPackageVersions(pkgbuild.Pkgname)
-
+	remotePkgrel, err := pkgbuild.comparator(client, *pkgbuild, PKGBUILD)
 	if err != nil {
-		slog.Error("Failed to fetch package info from AUR")
 		return "", err
 	}
-
-	if data.new == false && data.version == pkgbuild.Version {
-		slog.Warn("AUR version and current version match, this should only be a PKGBUILD update")
-		slog.Info("Comparing PKGBUILD to validate")
-		aurPKGBUILD, err := pkgbuild.client.fetchPKGBUILD(pkgbuild.Pkgname)
-		if err != nil {
-			slog.Error("Failed to fetch PKGBUILD from AUR")
-			return "", err
-		}
-		remoteChecksums, err := parser.ExtractChecksums(PKGBUILD)
-
-		if err != nil {
-			slog.Error("Failed to fetch PKGBUILD from AUR")
-			return "", err
-		}
-		if parser.ComparePKGBUILDs(PKGBUILD, aurPKGBUILD) {
-			slog.Error("Files match!! should not publish to the AUR without changes to PKGBUILD file or the software Version")
-			return "", fmt.Errorf("PKGBUILD already published to AUR")
-		}
-
-		if len(pkgbuild.checksum_aarch64)+len(pkgbuild.checksum_x86_64) != len(remoteChecksums) {
-			slog.Error("Checksums differ!! should not increament the pkgrel with new sources")
-			return "", fmt.Errorf("Old version new checksums")
-		}
-		for _, local := range pkgbuild.checksum_aarch64 {
-			found := slices.Contains(remoteChecksums["aarch64"], local)
-			if !found {
-				slog.Error("Checksums differ!! should not increament the pkgrel with new sources")
-				return "", fmt.Errorf("Old version new checksums")
-			}
-		}
-
-		for _, local := range pkgbuild.checksum_x86_64 {
-			found := slices.Contains(remoteChecksums["x86_64"], local)
-			if !found {
-				slog.Error("Checksums differ!! should not increament the pkgrel with new sources")
-				return "", fmt.Errorf("Old version new checksums")
-			}
-		}
-		slog.Info("New PKGBUILD file increasing pkgrel number to", "pkgrel", data.pkgrel+1)
-		pkgbuild.Pkgrel = data.pkgrel + 1
+	if remotePkgrel != -1 {
+		pkgbuild.Pkgrel = remotePkgrel + 1
+		slog.Info("New PKGBUILD file increasing pkgrel number to", "pkgrel", pkgbuild.Pkgrel)
 
 		slog.Info("Templating again")
 		PKGBUILD, SRCINFO, err = pkgbuild.template()
@@ -205,14 +126,7 @@ func (pkgbuild *PkgBuild) generate() (string, error) {
 			slog.Error("Failed to template PKGBUILD dumping\n ", "dump", pkgbuild)
 			return "", err
 		}
-	} else {
-		if data.new {
-			slog.Info("New package")
-		}
-		slog.Info("New version means reset pkgrel")
-		pkgbuild.Pkgrel = 1
 	}
-
 	if err := writeFile(pkgbuild.outputPath+"PKGBUILD", PKGBUILD); err != nil {
 		return "", err
 	}
@@ -277,30 +191,4 @@ func (pkgbuild PkgBuild) template() (string, string, error) {
 	}
 
 	return pkgbuildBuf.String(), srcinfoBuf.String(), nil
-}
-
-func (p PkgBuild) calculateForSources(sources []string) ([]string, error) {
-	checksums := make([]string, len(sources))
-
-	for i, source := range sources {
-		url := source
-
-		if idx := strings.LastIndex(source, "::"); idx != -1 {
-			url = source[idx+2:]
-		}
-		body, err := p.client.Get(url)
-		if err != nil {
-			return nil, fmt.Errorf("failed to download source %v: %w", url, err)
-		}
-
-		checksum, err := parser.CalculateSHA256(bytes.NewReader(body))
-		if err != nil {
-			return nil, fmt.Errorf("failed to checksum source %d: %w", i, err)
-		}
-
-		checksums[i] = checksum
-		slog.Info("Calculated checksum", "source", source, "sha256", checksum)
-	}
-
-	return checksums, nil
 }

@@ -13,10 +13,12 @@ provides=()
 conflicts=()
 source_x86_64=(
 "pkgmate-bin-0.1.1-x86_64::https://github.com/fuad-daoud/pkgmate/releases/download/0.1.1/pkgmate-linux-amd64"
-"LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v0.1.1/LICENSE"
-"README::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v0.1.1/README.md"
 )
-sha256sums_x86_64=('SKIP')
+
+sha256sums_x86_64=(
+'ba62160a8721ea41c112adc3cd369e1c7abb9d1c03d2bd89d13740b420cc1cc6'
+)
+
 
 package() {
     if [ "$CARCH" = "x86_64" ]; then

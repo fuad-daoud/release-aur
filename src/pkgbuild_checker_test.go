@@ -186,7 +186,7 @@ func TestValidate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.pkg.validate()
+			err := validate(tt.pkg)
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.Equal(t, tt.errMsg, err.Error())

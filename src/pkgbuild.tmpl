@@ -19,18 +19,28 @@ source_x86_64=(
 "{{ . }}"
 {{ end -}}
 )
+
+sha256sums_x86_64=(
+{{ range .Checksum_x86_64 -}}
+'{{ . }}'
+{{ end -}}
+)
+
 {{- if .Source_aarch64 }}
 source_aarch64=(
 {{ range .Source_aarch64 -}}
 "{{ . }}"
 {{ end -}}
 )
-{{- end }}
-sha256sums_x86_64=('SKIP')
 
-{{- if .Source_aarch64 }}
-sha256sums_aarch64=('SKIP')
+sha256sums_aarch64=(
+{{ range .Checksum_aarch64 -}}
+'{{ . }}'
+{{ end -}}
+)
+
 {{- end }}
+
 
 package() {
     if [ "$CARCH" = "x86_64" ]; then

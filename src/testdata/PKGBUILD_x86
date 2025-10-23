@@ -19,7 +19,11 @@ source_x86_64=(
 "LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkg/v0.1.4/LICENSE"
 "README::https://raw.githubusercontent.com/fuad-daoud/pkg/v0.1.4/README.md"
 )
-sha256sums_x86_64=('SKIP')
+
+sha256sums_x86_64=(
+'SKIP'
+)
+
 
 package() {
     if [ "$CARCH" = "x86_64" ]; then

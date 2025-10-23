@@ -38,7 +38,7 @@ func ExtractChecksums(pkgbuildContent string) (map[string][]string, error) {
 
 func extractChecksumsFromLine(line string) []string {
 	checksums := make([]string, 0)
-	if strings.Index(line, "(") != -1 {
+	if strings.Contains(line, "(") {
 		line = strings.TrimPrefix(line, line[:strings.Index(line, "(")+1])
 	}
 	line = strings.TrimSuffix(line, ")")

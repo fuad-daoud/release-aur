@@ -8,7 +8,7 @@ import (
 func main() {
 	pkgbuild := NewPkgBuildFromEnv()
 
-	if err := pkgbuild.validate(); err != nil {
+	if err := validate(*pkgbuild); err != nil {
 		slog.Error("Validation failed", "err", err)
 		os.Exit(1)
 	}
