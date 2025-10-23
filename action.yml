@@ -98,7 +98,7 @@ runs:
     - name: Build action
       shell: bash
       run: |
-        go build -C ${{ github.action_path }} -o $(pwd)/build-pkgbuild
+        go build -C ${{ github.action_path }}/src -o $(pwd)/build-pkgbuild
 
     - name: Generate PKGBUILD
       id: generate

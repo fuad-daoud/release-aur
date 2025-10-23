@@ -15,21 +15,22 @@ import (
 func TestGenerateNewVersion(t *testing.T) {
 
 	pkgbuild := PkgBuild{
-		CliName:       "pkgmate",
-		Maintainers:   []string{"Fuad Daoud <aur@fuad-daoud.com>"},
-		Pkgname:       "pkgmate-bin",
-		Version:       "100.0.0",
-		Pkgrel:        1,
-		Description:   "TUI application to manage your dependencies",
-		Url:           "https://github.com/fuad-daoud/pkgmate",
-		Arch:          []string{"x86_64"},
-		Licence:       []string{"MIT"},
-		Source_x86_64: []string{"pkgmate-bin-100.0.0-x86_64::https://github.com/fuad-daoud/pkgmate/releases/download/100.0.0/pkgmate-linux-amd64", "LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v100.0.0/LICENSE", "README::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v100.0.0/README.md"},
+		CliName:         "pkgmate",
+		Maintainers:     []string{"Fuad Daoud <aur@fuad-daoud.com>"},
+		Pkgname:         "pkgmate-bin",
+		Version:         "100.0.0",
+		Pkgrel:          1,
+		Description:     "TUI application to manage your dependencies",
+		Url:             "https://github.com/fuad-daoud/pkgmate",
+		Arch:            []string{"x86_64"},
+		Licence:         []string{"MIT"},
+		Source_x86_64:   []string{"pkgmate-bin-100.0.0-x86_64::https://github.com/fuad-daoud/pkgmate/releases/download/100.0.0/pkgmate-linux-amd64", "LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v100.0.0/LICENSE", "README::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v100.0.0/README.md"},
+		checksum_x86_64: []string{"SKIP"},
 
 		pkgbuildTemplatePath: "pkgbuild.tmpl",
 		srcInfoTemplatePath:  "srcinfo.tmpl",
 		outputPath:           "./output/",
-		client:               NewAURClient(5*time.Second, 5*time.Second, 5),
+		client:               NewClient(5*time.Second, 5*time.Second, 5),
 	}
 	err := pkgbuild.validate()
 	if err != nil {
@@ -52,21 +53,22 @@ func TestGenerateNewVersion(t *testing.T) {
 
 func TestGenerateNewPkgrel(t *testing.T) {
 	pkgbuild := PkgBuild{
-		CliName:       "pkgmate",
-		Maintainers:   []string{"Fuad Daoud <aur@fuad-daoud.com>"},
-		Pkgname:       "pkgmate-bin",
-		Version:       "0.1.1",
-		Pkgrel:        1,
-		Description:   "TUI application to manage your dependencies",
-		Url:           "https://github.com/fuad-daoud/pkgmate",
-		Arch:          []string{"x86_64"},
-		Licence:       []string{"MIT"},
-		Source_x86_64: []string{"pkgmate-bin-0.1.1-x86_64::https://github.com/fuad-daoud/pkgmate/releases/download/0.1.1/pkgmate-linux-amd64", "LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v0.1.1/LICENSE", "README::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v0.1.1/README.md"},
+		CliName:         "pkgmate",
+		Maintainers:     []string{"Fuad Daoud <aur@fuad-daoud.com>"},
+		Pkgname:         "pkgmate-bin",
+		Version:         "0.1.1",
+		Pkgrel:          1,
+		Description:     "TUI application to manage your dependencies",
+		Url:             "https://github.com/fuad-daoud/pkgmate",
+		Arch:            []string{"x86_64"},
+		Licence:         []string{"MIT"},
+		Source_x86_64:   []string{"pkgmate-bin-0.1.1-x86_64::https://github.com/fuad-daoud/pkgmate/releases/download/0.1.1/pkgmate-linux-amd64", "LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v0.1.1/LICENSE", "README::https://raw.githubusercontent.com/fuad-daoud/pkgmate/v0.1.1/README.md"},
+		checksum_x86_64: []string{"SKIP"},
 
 		outputPath:           "./output/",
 		pkgbuildTemplatePath: "pkgbuild.tmpl",
 		srcInfoTemplatePath:  "srcinfo.tmpl",
-		client:               NewAURClient(5*time.Second, 5*time.Second, 5),
+		client:               NewClient(5*time.Second, 5*time.Second, 5),
 	}
 	err := pkgbuild.validate()
 	if err != nil {
@@ -101,7 +103,7 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Source_x86_64:        []string{"test"},
 			pkgbuildTemplatePath: "./nonexistent.tmpl",
 			srcInfoTemplatePath:  "srcinfo.tmpl",
-			client:               NewAURClient(5*time.Second, time.Second, 1),
+			client:               NewClient(5*time.Second, time.Second, 1),
 		}
 
 		_, err := pkg.generate()
@@ -124,9 +126,10 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Arch:                 []string{"x86_64"},
 			Licence:              []string{"MIT"},
 			Source_x86_64:        []string{"test"},
+			checksum_x86_64:      []string{"SKIP"},
 			pkgbuildTemplatePath: "./pkgbuild.tmpl",
 			srcInfoTemplatePath:  "srcinfo.tmpl",
-			client:               DummyAURClient(server),
+			client:               DummyClient(server),
 		}
 
 		_, err := pkg.generate()
@@ -148,10 +151,11 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Arch:                 []string{"x86_64"},
 			Licence:              []string{"MIT"},
 			Source_x86_64:        []string{"test"},
+			checksum_x86_64:      []string{"SKIP"},
 			pkgbuildTemplatePath: "./pkgbuild.tmpl",
 			srcInfoTemplatePath:  "srcinfo.tmpl",
 			outputPath:           "/tmp/",
-			client:               DummyAURClient(server),
+			client:               DummyClient(server),
 		}
 
 		_, err := pkg.generate()
@@ -177,10 +181,11 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Url:                  "https://example.com",
 			Arch:                 []string{"x86_64"},
 			Licence:              []string{"MIT"},
+			checksum_x86_64:      []string{"SKIP"},
 			Source_x86_64:        []string{"test"},
 			pkgbuildTemplatePath: "./pkgbuild.tmpl",
 			srcInfoTemplatePath:  "srcinfo.tmpl",
-			client:               DummyAURClient(server),
+			client:               DummyClient(server),
 			outputPath:           "/root/",
 		}
 
@@ -213,9 +218,10 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Arch:                 []string{"x86_64"},
 			Licence:              []string{"MIT"},
 			Source_x86_64:        []string{"test"},
+			checksum_x86_64:      []string{"SKIP"},
 			pkgbuildTemplatePath: "./pkgbuild.tmpl",
 			srcInfoTemplatePath:  "srcinfo.tmpl",
-			client:               DummyAURClient(server),
+			client:               DummyClient(server),
 			outputPath:           "/root/",
 		}
 
@@ -258,9 +264,10 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Arch:                 []string{"x86_64"},
 			Licence:              []string{"MIT"},
 			Source_x86_64:        []string{"test"},
+			checksum_x86_64:      []string{"SKIP"},
 			pkgbuildTemplatePath: "/tmp/pkgbuild.tmpl",
 			srcInfoTemplatePath:  "srcinfo.tmpl",
-			client:               DummyAURClient(server),
+			client:               DummyClient(server),
 			outputPath:           "/root/",
 		}
 
@@ -289,9 +296,10 @@ func TestGenerate_Errors_WithHttpTest(t *testing.T) {
 			Arch:                 []string{"x86_64"},
 			Licence:              []string{"MIT"},
 			Source_x86_64:        []string{"test"},
+			checksum_x86_64:      []string{"SKIP"},
 			pkgbuildTemplatePath: "pkgbuild.tmpl",
 			srcInfoTemplatePath:  "srcinfo.tmpl",
-			client:               DummyAURClient(server),
+			client:               DummyClient(server),
 			outputPath:           "/root/",
 		}
 

@@ -9,15 +9,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func DummyAURClient(server *httptest.Server) AURClient {
-	return AURClient{
+func DummyClient(server *httptest.Server) Client {
+	return Client{
 		base:   server.URL,
 		client: &http.Client{},
 		tries:  1,
 	}
 }
 
-func TestAURClient_fetchPKGBUILD(t *testing.T) {
+func TestClient_fetchPKGBUILD(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		expectedContent := `pkgname=test
 pkgver=1.0.0
@@ -30,7 +30,7 @@ pkgrel=1`
 		}))
 		defer server.Close()
 
-		client := DummyAURClient(server)
+		client := DummyClient(server)
 		result, err := client.fetchPKGBUILD("test-pkg")
 
 		assert.NoError(t, err)
@@ -43,7 +43,7 @@ pkgrel=1`
 		}))
 		defer server.Close()
 
-		client := DummyAURClient(server)
+		client := DummyClient(server)
 		_, err := client.fetchPKGBUILD("nonexistent")
 
 		assert.Error(t, err)
@@ -56,7 +56,7 @@ pkgrel=1`
 		}))
 		defer server.Close()
 
-		client := DummyAURClient(server)
+		client := DummyClient(server)
 		_, err := client.fetchPKGBUILD("test-pkg")
 
 		assert.Error(t, err)
@@ -64,7 +64,7 @@ pkgrel=1`
 	})
 }
 
-func TestAURClient_getAurPackageVersions(t *testing.T) {
+func TestClient_getAurPackageVersions(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, "/rpc/?v=5&type=info&arg[]=test-pkg", r.URL.String())
@@ -73,7 +73,7 @@ func TestAURClient_getAurPackageVersions(t *testing.T) {
 		}))
 		defer server.Close()
 
-		client := DummyAURClient(server)
+		client := DummyClient(server)
 		result, err := client.getAurPackageVersions("test-pkg")
 
 		assert.NoError(t, err)
@@ -87,7 +87,7 @@ func TestAURClient_getAurPackageVersions(t *testing.T) {
 		}))
 		defer server.Close()
 
-		client := DummyAURClient(server)
+		client := DummyClient(server)
 		_, err := client.getAurPackageVersions("test-pkg")
 
 		assert.Error(t, err)
@@ -101,7 +101,7 @@ func TestAURClient_getAurPackageVersions(t *testing.T) {
 		}))
 		defer server.Close()
 
-		client := DummyAURClient(server)
+		client := DummyClient(server)
 		_, err := client.getAurPackageVersions("test-pkg")
 
 		assert.Error(t, err)
@@ -115,7 +115,7 @@ func TestAURClient_getAurPackageVersions(t *testing.T) {
 		}))
 		defer server.Close()
 
-		client := DummyAURClient(server)
+		client := DummyClient(server)
 		data, err := client.getAurPackageVersions("nonexistent")
 		assert.NoError(t, err)
 		assert.True(t, data.new)
@@ -128,7 +128,7 @@ func TestAURClient_getAurPackageVersions(t *testing.T) {
 		}))
 		defer server.Close()
 
-		client := DummyAURClient(server)
+		client := DummyClient(server)
 		_, err := client.getAurPackageVersions("test")
 
 		assert.Error(t, err)
@@ -142,20 +142,20 @@ func TestAURClient_getAurPackageVersions(t *testing.T) {
 		}))
 		defer server.Close()
 
-		client := DummyAURClient(server)
+		client := DummyClient(server)
 		_, err := client.getAurPackageVersions("test")
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "parse pkgRel")
 	})
 	t.Run("http.Get error in fetchPKGBUILD", func(t *testing.T) {
-		client := AURClient{base: "http://invalid-url-that-does-not-exist", client: &http.Client{Timeout: 100 * time.Millisecond}, tries: 1}
+		client := Client{base: "http://invalid-url-that-does-not-exist", client: &http.Client{Timeout: 100 * time.Millisecond}, tries: 1}
 		_, err := client.fetchPKGBUILD("test")
 
 		assert.Error(t, err)
 	})
 	t.Run("http.Get error in getAurPackageVersions", func(t *testing.T) {
-		client := AURClient{base: "http://invalid-url-that-does-not-exist", client: &http.Client{Timeout: 100 * time.Millisecond}, tries: 1}
+		client := Client{base: "http://invalid-url-that-does-not-exist", client: &http.Client{Timeout: 100 * time.Millisecond}, tries: 1}
 		_, err := client.getAurPackageVersions("test")
 
 		assert.Error(t, err)
@@ -172,11 +172,11 @@ func TestAURClient_getAurPackageVersions(t *testing.T) {
 			}
 		}))
 		defer server.Close()
-		client := DummyAURClient(server)
+		client := DummyClient(server)
 		client.tries = 5
 		expectedTries = client.tries
 		client.waitRetryDuration = 200 * time.Millisecond
-		_, err := client.get("")
+		_, err := client.getAur("")
 		assert.NoError(t, err)
 		assert.Equal(t, client.tries, hits)
 	})

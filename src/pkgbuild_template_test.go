@@ -34,7 +34,7 @@ func TestTemplate(t *testing.T) {
 				Source_aarch64:       []string{"pkg-bin-0.1.4-aarch_64::https://github.com/fuad-daoud/pkg/releases/download/v0.1.4/prayers-linux-aarch_64", "LICENSE::https://raw.githubusercontent.com/fuad-daoud/pkg/v0.1.4/LICENSE", "README::https://raw.githubusercontent.com/fuad-daoud/pkg/v0.1.4/README.md"},
 				pkgbuildTemplatePath: "pkgbuild.tmpl",
 				srcInfoTemplatePath:  "srcinfo.tmpl",
-				client:               NewAURClient(10*time.Second, time.Second, 5),
+				client:               NewClient(10*time.Second, time.Second, 5),
 			},
 			expectedPKGBUILD: "testdata/PKGBUILD",
 			expectedSRCINFO:  "testdata/.SRCINFO",
@@ -57,7 +57,7 @@ func TestTemplate(t *testing.T) {
 
 				pkgbuildTemplatePath: "pkgbuild.tmpl",
 				srcInfoTemplatePath:  "srcinfo.tmpl",
-				client:               NewAURClient(10*time.Second, time.Second, 5),
+				client:               NewClient(10*time.Second, time.Second, 5),
 			},
 			expectedPKGBUILD: "testdata/PKGBUILD_x86",
 			expectedSRCINFO:  "testdata/.SRCINFO_x86",

@@ -9,33 +9,39 @@ import (
 	"strings"
 	"text/template"
 	"time"
+
+	"slices"
+
+	"github.com/fuad-daoud/release-aur/src/parser"
 )
 
 type PkgBuild struct {
-	CliName        string
-	Maintainers    []string
-	Contributors   []string
-	Pkgname        string
-	Version        string
-	Pkgrel         int
-	Description    string
-	Url            string
-	Arch           []string
-	Licence        []string
-	Provides       []string
-	Conflicts      []string
-	Source_x86_64  []string
-	Source_aarch64 []string
+	CliName          string
+	Maintainers      []string
+	Contributors     []string
+	Pkgname          string
+	Version          string
+	Pkgrel           int
+	Description      string
+	Url              string
+	Arch             []string
+	Licence          []string
+	Provides         []string
+	Conflicts        []string
+	Source_x86_64    []string
+	checksum_x86_64  []string
+	Source_aarch64   []string
+	checksum_aarch64 []string
 
 	pkgbuildTemplatePath string
 	srcInfoTemplatePath  string
 	outputPath           string
-	client               AURClient
+	client               Client
 }
 
 func NewPkgBuild() *PkgBuild {
 	return &PkgBuild{
-		client: NewAURClient(5*time.Second, 5*time.Second, 5),
+		client: NewClient(30*time.Second, 5*time.Second, 5),
 	}
 }
 func NewPkgBuildFromEnv() *PkgBuild {
@@ -122,6 +128,23 @@ func (p *PkgBuild) validate() error {
 
 func (pkgbuild *PkgBuild) generate() (string, error) {
 	slog.Info("starting pkgbuild.generate ..")
+
+	if len(pkgbuild.checksum_x86_64) == 0 {
+		checksum_x86_64, err := pkgbuild.calculateForSources(pkgbuild.Source_x86_64)
+		if err != nil {
+			return "", err
+		}
+		pkgbuild.checksum_x86_64 = checksum_x86_64
+	}
+
+	if len(pkgbuild.checksum_aarch64) == 0 {
+		checksum_aarch64, err := pkgbuild.calculateForSources(pkgbuild.Source_aarch64)
+		if err != nil {
+			return "", err
+		}
+		pkgbuild.checksum_aarch64 = checksum_aarch64
+	}
+
 	PKGBUILD, SRCINFO, err := pkgbuild.template()
 	if err != nil {
 		slog.Error("Failed to template PKGBUILD dumping\n ", "dump", pkgbuild)
@@ -143,9 +166,35 @@ func (pkgbuild *PkgBuild) generate() (string, error) {
 			slog.Error("Failed to fetch PKGBUILD from AUR")
 			return "", err
 		}
-		if comparePKGBUILDs(PKGBUILD, aurPKGBUILD) {
+		remoteChecksums, err := parser.ExtractChecksums(PKGBUILD)
+
+		if err != nil {
+			slog.Error("Failed to fetch PKGBUILD from AUR")
+			return "", err
+		}
+		if parser.ComparePKGBUILDs(PKGBUILD, aurPKGBUILD) {
 			slog.Error("Files match!! should not publish to the AUR without changes to PKGBUILD file or the software Version")
 			return "", fmt.Errorf("PKGBUILD already published to AUR")
+		}
+
+		if len(pkgbuild.checksum_aarch64)+len(pkgbuild.checksum_x86_64) != len(remoteChecksums) {
+			slog.Error("Checksums differ!! should not increament the pkgrel with new sources")
+			return "", fmt.Errorf("Old version new checksums")
+		}
+		for _, local := range pkgbuild.checksum_aarch64 {
+			found := slices.Contains(remoteChecksums["aarch64"], local)
+			if !found {
+				slog.Error("Checksums differ!! should not increament the pkgrel with new sources")
+				return "", fmt.Errorf("Old version new checksums")
+			}
+		}
+
+		for _, local := range pkgbuild.checksum_x86_64 {
+			found := slices.Contains(remoteChecksums["x86_64"], local)
+			if !found {
+				slog.Error("Checksums differ!! should not increament the pkgrel with new sources")
+				return "", fmt.Errorf("Old version new checksums")
+			}
 		}
 		slog.Info("New PKGBUILD file increasing pkgrel number to", "pkgrel", data.pkgrel+1)
 		pkgbuild.Pkgrel = data.pkgrel + 1
@@ -230,10 +279,28 @@ func (pkgbuild PkgBuild) template() (string, string, error) {
 	return pkgbuildBuf.String(), srcinfoBuf.String(), nil
 }
 
-func comparePKGBUILDs(content1, content2 string) bool {
-	slog.Info("Removing check sums and pkgrel to compare ...")
-	norm1 := normalizePKGBUILD(content1)
-	norm2 := normalizePKGBUILD(content2)
-	slog.Info("Removed from both files comparing ...")
-	return norm1 == norm2
+func (p PkgBuild) calculateForSources(sources []string) ([]string, error) {
+	checksums := make([]string, len(sources))
+
+	for i, source := range sources {
+		url := source
+
+		if idx := strings.LastIndex(source, "::"); idx != -1 {
+			url = source[idx+2:]
+		}
+		body, err := p.client.Get(url)
+		if err != nil {
+			return nil, fmt.Errorf("failed to download source %v: %w", url, err)
+		}
+
+		checksum, err := parser.CalculateSHA256(bytes.NewReader(body))
+		if err != nil {
+			return nil, fmt.Errorf("failed to checksum source %d: %w", i, err)
+		}
+
+		checksums[i] = checksum
+		slog.Info("Calculated checksum", "source", source, "sha256", checksum)
+	}
+
+	return checksums, nil
 }
