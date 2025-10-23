@@ -1,3 +1,6 @@
+# Archiving in favor of using gorelaser
+
+
 # Release to AUR GitHub Action
 
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Release%20to%20AUR-blue.svg?colorA=24292e&colorB=0366d6&style=flat&longCache=true&logo=github)](https://github.com/marketplace/actions/release-to-aur)
