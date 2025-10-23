@@ -1,26 +1,36 @@
-package main
+package parser
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 	"testing"
 
-	"github.com/fuad-daoud/release-aur/src/parser"
 	"github.com/stretchr/testify/assert"
 )
 
-// func TestCalculateForSourcesReal(t *testing.T) {
-// 	sources := []string{"pkgmate-linux-amd64::https://github.com/fuad-daoud/pkgmate/releases/download/0.1.1/pkgmate-linux-amd64"}
-//
-// 	pkgbuild := &PkgBuild{
-// 		// client: NewClient(5*time.Second, 1*time.Second, 1),
-// 	}
-//
-// 	result, err := pkgbuild.calculateForSources(sources)
-//
-// 	assert.NoError(t, err)
-// 	// checksum from github
-// 	assert.Equal(t, []string{"ba62160a8721ea41c112adc3cd369e1c7abb9d1c03d2bd89d13740b420cc1cc6"}, result)
-// }
+func TestCalculateForSourcesReal(t *testing.T) {
+	sources := []string{"pkgmate-linux-amd64::https://github.com/fuad-daoud/pkgmate/releases/download/0.1.1/pkgmate-linux-amd64"}
+
+	result, err := DefaultCalculateSources(func(s string) ([]byte, error) {
+		resp, err := http.Get(s)
+		if err != nil {
+			return []byte{}, err
+		}
+
+		defer resp.Body.Close()
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return []byte{}, err
+		}
+		return body, nil
+	}, sources)
+
+	assert.NoError(t, err)
+	// checksum from github
+	assert.Equal(t, []string{"ba62160a8721ea41c112adc3cd369e1c7abb9d1c03d2bd89d13740b420cc1cc6"}, result)
+}
 
 func TestCalculateForSources(t *testing.T) {
 	tests := []struct {
@@ -89,7 +99,7 @@ func TestCalculateForSources(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := parser.DefaultCalculateSources(tt.clientMock, tt.sources)
+			result, err := DefaultCalculateSources(tt.clientMock, tt.sources)
 
 			if tt.wantErr {
 				assert.Error(t, err)
